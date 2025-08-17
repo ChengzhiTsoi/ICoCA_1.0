@@ -31,8 +31,7 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 ├── best_edges_png/        # Selected substructure PNG image files
 ├── gcmc_rest_mofs/        # MOFs not requiring GCMC simulations
 ├── gcmc_selected_mofs/    # Folder of MOFs selected for GCMC simulations
-│   ├── DatatoCif.py             # Convert LAMMPS output .DATA files to .CIF files
-│   ├── error_list_energy_mini.txt             # MOFs that failed during energy minimization
+│   ├── DatatoCif.py             # Convert LAMMPS output .DATA files to .CIF
 │   ├── lammps_input.in          # Energy minimization of MOFs
 │   └── MOFs_gcmc.csv         # MOFs for GCMC simulations
 ├── Linker_summary/        # Linker summaries
@@ -109,7 +108,7 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 2. Prepare input files:
    - Place linker MOLs in `/optimal_linker`
    - Place node CIFs in `/all_nodes` and topologies in `/all_topologies`
-   - Copy node/topology files into `/tobacco_1.0-master/nodes_bb` and `/tobacco_1.0-master/templates`
+   - Copy node/topology files into `/tobacco_1.0/nodes_bb` and `/tobacco_1.0/templates`
    - Add computed MOF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 1`)  
      Format: **MOF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → MOF performance**
    - Place pre-trained model `Pretrained_model.ckpt` into `/TL`
@@ -144,11 +143,11 @@ This project is licensed under the [CC0 1.0 Universal License](https://chooseali
 
 ## Credits
 This work is supported by:
+- Guangzhou University
+- University of Notre Dame
 - Guangzhou Key Laboratory New Energy and Green Catalysis
 - Joint Institute of Guangzhou University & Institute of Corrosion Science and Technology
-- Guangzhou University
 - Center for Research Computing at the University of Notre Dame
-- University of Notre Dame
 
 Special thanks to the project collaborators for their contributions and insights.
 
