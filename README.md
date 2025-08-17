@@ -91,8 +91,6 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 ├── OptimalFingerprint.py       # Selecting the optimal molecular fingerprint
 └── ScreenLinkers.py            # Screening linkers
 
-```plaintext
-
 ## Requirements
 1. Python 3.7+
 2. Linux environment
