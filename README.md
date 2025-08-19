@@ -69,7 +69,6 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 ├── tobacco_1.0/    # Tobacco files
 ├── 500000.sdf                  # Large substructure database
 ├── Adsorption_simulation.sh                       # GCMC simulation for gas adsorption
-├── CiftoMol.py                 # Converting CIF files to MOL files
 ├── colourMol.py                # Coloring PNG image files
 ├── DefineXAtoms.py             # Defining X atoms
 ├── EncodeMOFs.py               # Encoding MOFs
@@ -152,4 +151,5 @@ This work is supported by:
 Special thanks to the project collaborators for their contributions and insights.
 
 ## Citation
+
 If you use this code or dataset in your research, please cite the following publication:
