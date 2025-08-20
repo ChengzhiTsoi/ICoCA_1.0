@@ -4,6 +4,29 @@ conda activate dl-env
 chmod 777 *.sh
 chmod 777 *.py
 
+
+
+# Beginning
+print_banner() {
+                echo " ==========================================================="
+                echo "                                                            "
+                echo "    #####           #####                   #####     #     "  
+                echo "      #       #     #   #                   #   #    # #    "
+                echo "      #     #####   #        ###   ######   #       #   #   "
+                echo "      #       #     #       #   #   #   #   #       #####   "
+                echo "      #       #     #       #   #   #   #   #       #   #   "
+                echo "      #       # #   #   #   #   #   #   #   #   #   #   #   "
+                echo "    #####     ###   #####    ###    #   #   #####   #   #   "
+                echo "                                                            "
+                echo "         Iterative Construction of Crystal Adsorbent        "
+                echo "                                                            "
+                echo " ==========================================================="
+                }
+print_banner
+echo ">>> Starting AutoDesign..."
+
+
+
 part1(){
 # Automatically design of MOFs. Env: ADTL
 python3 MOF_design_part1.py
