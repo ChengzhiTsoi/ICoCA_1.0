@@ -10,7 +10,6 @@ This repository contains the transfer learning model and the automated design su
 - [Usage](#usage)
 - [Expected Results](#expected-results)
 - [References](#references)
-- [License](#license)
 - [Credits](#credits)
 - [Citation](#citation)
 
@@ -150,6 +149,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
