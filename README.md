@@ -137,9 +137,6 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 
 [RDKit] RDKit: Open-source cheminformatics. (https://www.rdkit.org). [https://doi.org/10.5281/zenodo.591637]
 
-## License
-This project is licensed under the [CC0 1.0 Universal License](https://choosealicense.com/licenses/cc0-1.0/).
-
 ## Credits
 This work is supported by:
 - Guangzhou University
@@ -153,5 +150,6 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
