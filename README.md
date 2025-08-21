@@ -91,10 +91,10 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 
 ## Requirements
 1. Python 3.7+
-2. Linux environment (Note: This program has only been tested on **Red Hat Enterprise Linux 9.6 (Plow)**.)
-3. Packages: "RDKit", "torch", "scikit-learn", "openpyxl", "pytorch-ignite", "ase" and "openmpi", "pymatgen", "paramiko", "LAMMPS-interface".
-4. LAMMPS with MOLECULE and EXTRA-MOLECULE packages enabled. [https://www.lammps.org/#gsc.tab=0]
-5. RASPA (Ensure that the required molecular definition files (.def) and force field files are located in /LINUX/gcmc_required, while the RASPA input files (simulation.input) are located in /LINUX.) [https://iraspa.org/raspa/]
+2. Linux environment (Note: This program has only been tested on `Red Hat Enterprise Linux 9.6 (Plow)`.)
+3. Packages: `RDKit`, `torch`, `scikit-learn`, `openpyxl`, `pytorch-ignite`, `ase` and `openmpi`, `pymatgen`, `paramiko`, `LAMMPS-interface`.
+4. LAMMPS with `MOLECULE` and `EXTRA-MOLECULE` packages enabled. [https://www.lammps.org/#gsc.tab=0]
+5. RASPA (Ensure that the required molecular definition files (.def) and force field files are located in `/LINUX/gcmc_required`, while the RASPA input files (`simulation.input`) are located in `/LINUX`.) [https://iraspa.org/raspa/]
 6. GNU parallel. [http://ftpmirror.gnu.org/parallel/]
 
 ## Usage
@@ -118,10 +118,10 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
    nohup sh main_auto.sh > output.log 2>&1 &
 
 ## Expected Results
-1. Final performance summary: TL/final_data.xlsx
-2. Performance graph: TL/Output.png
-3. Generated MOFs: New_MOF_summary/
-4. Linker summaries: Linker_summary/
+1. Final performance summary: `TL/final_data.xlsx`
+2. Performance graph: `TL/Output.png`
+3. Generated MOFs: `New_MOF_summary/`
+4. Linker summaries: `Linker_summary/`
 
 ## References
 [LAMMPS for energy minimization] A. P. Thompson, H. M. Aktulga, R. Berger, D. S. Bolintineanu, W. M. Brown, P. S. Crozier, P. J. in "t Veld, A. Kohlmeyer, S. G. Moore, T. D. Nguyen, R. Shan, M. J. Stevens, J. Tranchida, C. Trott, S. J. Plimpton, LAMMPS - a flexible simulation tool for particle-based materials modeling at the atomic, meso, and continuum scales, Comp. Phys. Comm., 271, 10817 (2022). [https://doi.org/10.1016/j.cpc.2021.108171]
@@ -149,6 +149,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
