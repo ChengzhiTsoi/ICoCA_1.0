@@ -8,19 +8,19 @@ chmod 777 *.py
 
 # Beginning
 print_banner() {
-                echo "==============================================="
-                echo "                                               "
-                echo "    #####   #####           #####     #       "
-                echo "      #     #   #           #   #    # #      "
-                echo "      #     #        ###    #       #   #     "
-                echo "      #     #       #   #   #       #####     "
-                echo "      #     #       #   #   #       #   #     "
-                echo "      #     #   #   #   #   #   #   #   #     "
-                echo "    #####   #####    ###    #####   #   #     "
-                echo "                                               "
-                echo "  Iterative Construction of Crystal Adsorbent  "
-                echo "                                               "
-                echo "==============================================="
+                echo "============================================="
+                echo "                                             "
+                echo "    #####   #####           #####     #      "
+                echo "      #     #   #           #   #    # #     "
+                echo "      #     #        ###    #       #   #    "
+                echo "      #     #       #   #   #       #####    "
+                echo "      #     #       #   #   #       #   #    "
+                echo "      #     #   #   #   #   #   #   #   #    "
+                echo "    #####   #####    ###    #####   #   #    "
+                echo "                                             "
+                echo " Iterative Construction of Crystal Adsorbent "
+                echo "                                             "
+                echo "============================================="
                 }
 print_banner
 echo ">>> Starting AutoDesign..."
