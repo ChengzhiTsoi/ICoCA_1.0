@@ -104,8 +104,8 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
    - Number of concurrent tasks
 
 2. Prepare input files:
-   - Place linker MOLs in `/optimal_linker`
-   - Place node CIFs in `/all_nodes` and topologies in `/all_topologies`
+   - Place linker (**.mol**) files in `/optimal_linker`
+   - Place node (**.cif**) files in `/all_nodes` and topologies (**.template**) in `/all_topologies`
    - Copy node/topology files into `/tobacco_1.0/nodes_bb` and `/tobacco_1.0/templates`
    - Add computed MOF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 1`)  
      Format: **MOF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → MOF performance**
@@ -149,6 +149,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
