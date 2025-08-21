@@ -140,15 +140,16 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 This work is supported by:
 - Guangzhou University
 - University of Notre Dame
+- Center for Research Computing at the University of Notre Dame
 - Guangzhou Key Laboratory New Energy and Green Catalysis
 - Joint Institute of Guangzhou University & Institute of Corrosion Science and Technology
-- Center for Research Computing at the University of Notre Dame
 
 Special thanks to the project collaborators for their contributions and insights.
 
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
