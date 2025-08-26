@@ -32,12 +32,12 @@ else
 fi
 
 # Set RASPA environment variables. Environment: ADTL/LINUX/prepared_mofs/$FrameworkName
-export RASPA_PATH="${RASPA_DIR}"
-export DYLD_LIBRARY_PATH="${RASPA_PATH}/lib"
-export LD_LIBRARY_PATH="${RASPA_PATH}/lib:${LD_LIBRARY_PATH:-}"
+export RASPA_DIR="${RASPA_PATH}"
+export PATH="$RASPA_DIR/bin:$PATH"
+export LD_LIBRARY_PATH="$RASPA_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 # Run simulation and handle errors
-if ! "$RASPA_PATH/bin/simulate" -i simulation.input > simulate.log 2>&1; then
+if ! "$RASPA_DIR/bin/simulate" -i simulation.input > simulate.log 2>&1; then
     # Append to error list with file lock to avoid race conditions
     {
       flock -x 9
