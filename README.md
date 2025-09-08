@@ -1,6 +1,11 @@
 # Iterative Construction of Crystal Adsorbent (ICoCA)
 *Automated Circular Design of High-Performance MOFs*
 
+<p align="center">
+  <img src="ICoCA_Process.tif" width="800" alt="ICoCA Process">
+</p>
+
+
 This repository contains the transfer learning model and the automated design submission script codes for hypothetical MOFs, along with the corresponding datasets described in our paper.
 
 ## Table of Contents
@@ -149,6 +154,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
