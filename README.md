@@ -115,6 +115,7 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
    - Add computed MOF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 1`)  
      Format: **MOF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → MOF performance**
    - Place pre-trained model `Pretrained_model.ckpt` into `/TL`
+   - Extract the `SDF.zip` file and place the `500000.sdf` file from the extracted folder in the same directory as `main_auto.sh`.
 
 3. Run in terminal:
    ```bash
@@ -154,6 +155,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
