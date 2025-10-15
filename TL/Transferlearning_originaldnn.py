@@ -13,22 +13,25 @@ from torch.utils.data import Dataset
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from openpyxl import load_workbook
-from openpyxl import Workbook
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load dataset
-dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', engine='openpyxl')
+# Load dataset (with header)
+dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, engine = 'openpyxl')
 num_columns_test = len(dataset_test_tt.columns)
 MOF_name = dataset_test_tt.iloc[:, 0].values
-X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-1].values
+
+# Features: skip name col, exclude the last 4 derived/label cols
+X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
+
+# NOTE: Ideally reuse the scaler fitted on TRAIN data.
 scaler = StandardScaler()
 scaler.fit(X_tt_test)
 X_tt_test = scaler.transform(X_tt_test)
-data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32)
 
-# Load model
-# Build the neural network model
+data_X_tt = torch.tensor(X_tt_test, dtype = torch.float32).to(device)
+
+# Model
 class NeuralNet(nn.Module):
     def __init__(self, input_size, hidden_size1, hidden_size2, hidden_size3, output_size):
         super(NeuralNet, self).__init__()
@@ -43,48 +46,40 @@ class NeuralNet(nn.Module):
         x = self.acti(self.hidden_layer1(x))
         x = self.acti(self.hidden_layer2(x))
         x = self.output_layer(x)
-        return x   
+        return x
 
 input_size = X_tt_test.shape[1]
-hidden_size1 = 64
-hidden_size2 = 32
-hidden_size3 = 16
-output_size = 1
+model = NeuralNet(input_size, 64, 32, 16, 1)
 
-model = NeuralNet(input_size, hidden_size1, hidden_size2, hidden_size3, output_size)
 
+# ===================== Prediction =====================
 trained_model = torch.load('Pretrained_model.ckpt')
-print(trained_model)
+trained_model.to(device)
 trained_model.eval()
 
 with torch.no_grad():
-     y_pred_tt = trained_model(data_X_tt)
-y_pred_tt = y_pred_tt.numpy()
-y_pred_tt_1 = y_pred_tt.tolist()
+    y_pred_tt = trained_model(data_X_tt).cpu().numpy().squeeze() # 1D array
 
-# Inputing adsorption amount to excel
-# excel
+# Write predictions to Excel (new column 'TSN_pred')
 path_excel = 'TL_data_target_task_test.xlsx'
-df = pd.read_excel(path_excel, engine='openpyxl')
+df = pd.read_excel(path_excel, header = 0, engine = 'openpyxl')
 row_count = len(df)
 column_count = len(df.columns)
 
 book = load_workbook(path_excel)
 ws = book['Sheet']
 
-MOFname_data = np.hstack((MOF_name.reshape(-1, 1), y_pred_tt_1))
-number = len(MOFname_data)
-for i in range(number):
-    MOF_single = MOFname_data[i]
-    MOF_single_copy = np.copy(MOF_single)
-    MOF_single_copy.tolist()
-    MOFname = MOF_single_copy[0]
-    MOF_TSN = MOF_single_copy[1]
-    for j in range(row_count):
-        name = df.iloc[j, 0]
-        if name == MOFname:
-            ws.cell(row = j + 2, column = column_count).value = MOF_TSN
-            break
+pred_col = column_count + 1
+ws.cell(row = 1, column = pred_col).value = 'TSN_pred'
+
+# Fast name -> row index mapping
+name_to_row = {str(df.iloc[j, 0]).strip(): j for j in range(row_count)}
+
+for name, pred in zip(MOF_name, y_pred_tt):
+    key = str(name).strip()
+    idx = name_to_row.get(key, None)
+    if idx is not None:
+        ws.cell(row = idx + 2, column = pred_col).value = float(pred) # +2: row 1 is header
 
 book.save(path_excel)
 print('The script Transferlearning_originaldnn.py has completed.')

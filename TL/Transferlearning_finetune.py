@@ -12,36 +12,35 @@ from torch.utils.data import Dataset
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from openpyxl import load_workbook
-from openpyxl import Workbook
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Transfer learning
+# ===================== Transfer learning =====================
 # Loading data
-dataset_train_tt = pd.read_excel('TL_data_target_task_train.xlsx', engine='openpyxl')
+dataset_train_tt = pd.read_excel('TL_data_target_task_train.xlsx', header = 0, engine = 'openpyxl')
 dataset_train_tt = dataset_train_tt.dropna()
+
 num_columns_train = len(dataset_train_tt.columns)
+# Features: skip name col (0), exclude last 4 derived/label cols
+X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-4].values
+# Target by name (safer)
+y_train_tt = dataset_train_tt['TSN_simu'].values
 
-X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-1].values
-y_train_tt = dataset_train_tt.iloc[:, -1].values
-
+# Scale features (fit on train only)
 scaler = StandardScaler()
 scaler.fit(X_train_tt)
 X_train_tt = scaler.transform(X_train_tt)
-
-y_train_tt = np.array(y_train_tt).reshape(len(y_train_tt),1)
+y_train_tt = y_train_tt.reshape(-1, 1)
 
 X_train_tt_1, X_val_tt, y_train_tt_1, y_val_tt = train_test_split(
-                                                              X_train_tt, 
-                                                              y_train_tt, 
-                                                              test_size = 0.1, 
-                                                              random_state = 42,
-                                                              )
+    X_train_tt, y_train_tt, test_size=0.1, random_state=42
+)
 
 train_set_tt = pd.concat([pd.DataFrame(X_train_tt_1), pd.DataFrame(y_train_tt_1)], axis = 1)
 val_set_tt = pd.concat([pd.DataFrame(X_val_tt), pd.DataFrame(y_val_tt)], axis = 1)
+n_features = X_train_tt_1.shape[1]
 
-# Build the neural network model
+# Model (not used if you only fine-tune the loaded one, but kept for clarity)
 class NeuralNet(nn.Module):
     def __init__(self, input_size, hidden_size1, hidden_size2, hidden_size3, output_size):
         super(NeuralNet, self).__init__()
@@ -56,64 +55,52 @@ class NeuralNet(nn.Module):
         x = self.acti(self.hidden_layer1(x))
         x = self.acti(self.hidden_layer2(x))
         x = self.output_layer(x)
-        return x   
+        return x
 
-input_size = X_train_tt_1.shape[1]
-hidden_size1 = 64
-hidden_size2 = 32
-hidden_size3 = 16
-output_size = 1
+# (Optional) Create a same-arch fresh model if needed
+model = NeuralNet(n_features, 64, 32, 16, 1)
 
-model = NeuralNet(input_size, hidden_size1, hidden_size2, hidden_size3, output_size)
-
-# Use the pretrained model
+# Load the pretrained model you want to fine-tune
 trained_model = torch.load('Pretrained_model.ckpt')
+trained_model.to(device)
 print(trained_model)
 
 class MyDataset(Dataset):
     def __init__(self, dataframe, data_col_start, data_col_end, labels_col):
         x = dataframe.iloc[:, data_col_start:data_col_end].values
         y = dataframe.iloc[:, labels_col].values
-        
-        self.x = torch.tensor(x, dtype=torch.float32)
-        y = torch.tensor(y, dtype=torch.float32)
-        self.y = y.view(-1,1)
+        self.x = torch.tensor(x, dtype = torch.float32)
+        self.y = torch.tensor(y, dtype = torch.float32).view(-1, 1)
 
     def __len__(self):
         return len(self.y)
-    
-    def __getitem__(self, index):  # Corrected __getitem__ method
+
+    def __getitem__(self, index):
         return self.x[index], self.y[index]
 
-train_set_1_tt = MyDataset(train_set_tt, 0, 255, 255)
-val_set_1_tt =  MyDataset(val_set_tt, 0, 255, 255)
+train_set_1_tt = MyDataset(train_set_tt, 0, n_features, n_features)
+val_set_1_tt = MyDataset(val_set_tt, 0, n_features, n_features)
 batch_size = 32
 
-# Set up train set and val set
-train_loader_tt = torch.utils.data.DataLoader(train_set_1_tt, batch_size = batch_size)
+# Dataloaders
+train_loader_tt = torch.utils.data.DataLoader(train_set_1_tt, batch_size = batch_size, shuffle = True)
 val_loader_tt = torch.utils.data.DataLoader(val_set_1_tt, batch_size = len(val_set_1_tt))
 
-# Freeze/unfreeze the parameters of the pre-trained model
-for param in trained_model.input_layer.parameters():
-    param.requires_grad = False
-for param in trained_model.hidden_layer1.parameters():
-    param.requires_grad = True
-for param in trained_model.hidden_layer2.parameters():
-    param.requires_grad = False
-for param in trained_model.output_layer.parameters():
-    param.requires_grad = False
-    
-# Define new optimizer
+# Freeze/unfreeze
+for p in trained_model.input_layer.parameters(): p.requires_grad = False
+for p in trained_model.hidden_layer1.parameters(): p.requires_grad = True
+for p in trained_model.hidden_layer2.parameters(): p.requires_grad = False
+for p in trained_model.output_layer.parameters(): p.requires_grad = False
+
 criterion = nn.MSELoss()
 metrics_tt = {"loss": Loss(criterion), "r_2": R2Score()}
-optimizer_tt = optim.Adam(
-                          filter(lambda p: p.requires_grad, trained_model.parameters()), 
-                          lr = 0.0001,
-                          )
+optimizer_tt = optim.Adam(filter(lambda p: p.requires_grad, trained_model.parameters()), lr = 1e-4)
 
-# Training loop
+# Training step (send batch to device)
 def train_step_1(engine, batch):
     x, y = batch
+    x = x.to(device)
+    y = y.to(device)
     trained_model.train()
     optimizer_tt.zero_grad()
     y_pred = trained_model(x)
@@ -122,16 +109,11 @@ def train_step_1(engine, batch):
     optimizer_tt.step()
     return loss.item()
 
-# Build train engine
 transfer_trainer = Engine(train_step_1)
+train_evaluator = create_supervised_evaluator(trained_model, metrics = metrics_tt, device = device)
+val_evaluator = create_supervised_evaluator(trained_model, metrics = metrics_tt, device = device)
 
-train_evaluator = create_supervised_evaluator(trained_model, metrics = metrics_tt)
-val_evaluator = create_supervised_evaluator(trained_model, metrics = metrics_tt)
-
-train_loss_tt = []
-train_r_2_tt = []
-val_loss_tt = []
-val_r_2_tt = []
+train_loss_tt, train_r_2_tt, val_loss_tt, val_r_2_tt = [], [], [], []
 
 @transfer_trainer.on(Events.EPOCH_COMPLETED(every=10))
 def store_metrics(engine):
@@ -139,91 +121,62 @@ def store_metrics(engine):
     val_evaluator.run(val_loader_tt)
     out = train_evaluator.state.metrics
     out_2 = val_evaluator.state.metrics
-    train_loss_tt.append(out["loss"]) 
+    train_loss_tt.append(out["loss"])
     train_r_2_tt.append(out["r_2"])
     val_loss_tt.append(out_2["loss"])
     val_r_2_tt.append(out_2["r_2"])
- 
-train_loader_tt = torch.utils.data.DataLoader(train_set_1_tt, batch_size = batch_size, shuffle = True)
+
 transfer_trainer.run(train_loader_tt, max_epochs = 1000)
 
-# Attach metrics to the trainer and validation evaluator
 for name, metric in metrics_tt.items():
     metric.attach(transfer_trainer, name)
 
-dic = {
-       "train_loss": train_loss_tt,
-       "train_r_2": train_r_2_tt,
-       "val_loss": val_loss_tt,
-       "val_r_2": val_r_2_tt,
-      }
-#filename = f"data_tl_epochs-{1}_bs-{10000}"
-#case_metrics = pd.DataFrame.from_dict(dic)
-#case_metrics.to_json(f"{filename}.json")
 
-
-# Prediction
+# ===================== Prediction =====================
 trained_model.eval()
 
-# Load dataset
-dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', engine='openpyxl')
+# Load test set
+dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, engine= 'openpyxl')
 num_columns_test = len(dataset_test_tt.columns)
 MOF_name = dataset_test_tt.iloc[:, 0].values
-X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-1].values
-scaler = StandardScaler()
-scaler.fit(X_tt_test)
+
+# Exclude last 4 derived/label columns just like train
+X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
 X_tt_test = scaler.transform(X_tt_test)
 
-data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32)
-
+data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32).to(device)
 with torch.no_grad():
-     y_pred_tt = trained_model(data_X_tt)
-y_pred_tt = y_pred_tt.numpy()
-y_pred_tt_1 = y_pred_tt.tolist()
+    y_pred_tt = trained_model(data_X_tt).cpu().numpy().squeeze() # 1D array
 
-# Inputing adsorption amount to excel
-# excel
+# Write predictions to a NEW column 'TSN_pred'
 path_excel = 'TL_data_target_task_test.xlsx'
-df = pd.read_excel(path_excel, engine='openpyxl')
-row_count = len(df)
-column_count = len(df.columns)
+df_test = pd.read_excel(path_excel, header = 0, engine = 'openpyxl')
+row_count = len(df_test)
+column_count = len(df_test.columns)
 
 book = load_workbook(path_excel)
 ws = book['Sheet']
 
-MOFname_data = np.hstack((MOF_name.reshape(-1, 1), y_pred_tt_1))
-number = len(MOFname_data)
-for i in range(number):
-    MOF_single = MOFname_data[i]
-    MOF_single_copy = np.copy(MOF_single)
-    MOF_single_copy.tolist()
-    MOFname = MOF_single_copy[0]
-    MOF_TSN = MOF_single_copy[1]
-    for j in range(row_count):
-        name = df.iloc[j, 0]
-        if name == MOFname:
-            ws.cell(row = j + 2, column = column_count).value = MOF_TSN
-            break
+pred_col = column_count + 1
+ws.cell(row=1, column = pred_col).value = 'TSN_pred'
+
+# Fast name -> row mapping
+name_to_row = {str(df_test.iloc[j, 0]).strip(): j for j in range(row_count)}
+
+for name, pred in zip(MOF_name, y_pred_tt):
+    key = str(name).strip()
+    if key in name_to_row:
+        excel_row = name_to_row[key] + 2 # +2 because row 1 is header
+        ws.cell(row = excel_row, column = pred_col).value = float(pred)
 
 book.save(path_excel)
 
-# Choose top 20% MOFs to gcmc and verify the DNN model
-MOF_index = np.argsort(y_pred_tt_1, axis = 0)[::-1]
-choose_number = round(0.2 * len(MOF_index))
-MOF_choosed = []
-for j in range(choose_number):
-    single_choosed = str(MOF_name[MOF_index[j]])
-    MOF_choosed.append(single_choosed)
-    
-# Extracting the name of these MOFs which need to be calculated EQeq  
-#wb = Workbook()
-#ws = wb.worksheets[0]
-#ws.cell(row = 1, column = 1).value = "Name" # row label
-written_content = [] 
-header = ['Name']
-for k in range(len(MOF_choosed)):
-    written_content.append(MOF_choosed[k].split("'")[1].split('.')[0])
-output_file = 'MOF_verify_model.csv'
-df = pd.DataFrame(written_content, columns = header)
-df.to_csv(output_file, index = False, encoding = 'utf-8')
+# ===================== Top 20% selection =====================
+order = np.argsort(y_pred_tt)[::-1] # indices sorted by prediction desc
+choose_number = max(1, int(round(0.2 * len(order))))
+top_indices = order[:choose_number]
+selected_names = [str(MOF_name[idx]) for idx in top_indices]
+# drop ".cif" suffix if present
+selected_names = [n[:-4] if n.lower().endswith('.cif') else n for n in selected_names]
+pd.DataFrame(selected_names, columns = ['Name']).to_csv('MOF_verify_model.csv', index = False, encoding = 'utf-8')
 print('The script Transferlearning_finetune.py has completed.')

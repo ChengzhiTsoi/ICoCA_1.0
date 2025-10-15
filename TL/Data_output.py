@@ -5,66 +5,69 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 from matplotlib.ticker import MaxNLocator
+from typing import Optional
 
-# Defining the path of sheet
 excel_file = 'final_data.xlsx'
 xls = pd.ExcelFile(excel_file, engine='openpyxl')
 
-# Initialization
-combined_data_sum_max = []
-combined_data_sum_aver = []
-combined_data_sum_number = []
-tsn_proportion_sum = []
-sheet_names = xls.sheet_names
+# ---- helpers ------------------------------------------------------------
+def cycle_key(name: str) -> int:
+    """Extract numeric key from 'Cycle N' for sorting; unknown -> big number."""
+    m = re.fullmatch(r'\s*Cycle\s+(\d+)\s*', str(name))
+    return int(m.group(1)) if m else 10**9
 
-# Reading each worksheet
-for sheet in sheet_names:
+def pick_tsn_series(df: pd.DataFrame) -> Optional[pd.Series]:
+    """Prefer TSN_pred -> TSN_simu -> TSN; returns numeric series (NaN allowed)."""
+    for col in ('TSN_pred', 'TSN_simu', 'TSN'):
+        if col in df.columns:
+            return pd.to_numeric(df[col], errors='coerce')
+    return None
 
-    data = pd.read_excel(excel_file, sheet_name=sheet, engine='openpyxl')
-    
-    if 'Cycle 1' in sheet:
-        MOF_tsn = data.iloc[:, -1]
-    else:
-        MOF_tsn = data.iloc[:, -2]
-    MOF_name = data["Name"]
+color_dict = {
+    'TSN<1': '#fff3b0',     # 1 > TSN
+    '1=TSN<2': '#ffd27f',   # 2 > TSN > 1
+    '2=TSN<3': '#f7a9a8',   # 3 > TSN > 2
+    '3=TSN<4': '#e0aaff',   # 4 > TSN > 3
+    'TSN=4': '#b388eb'      # TSN > 4
+}
 
-    # The number of MOFs
-    MOF_number = len(MOF_name)
-    combined_data_sum_number.append(MOF_number)
+# ---- load & compute -----------------------------------------------------
+sheet_names_sorted = sorted(xls.sheet_names, key=cycle_key)
 
-    # Average TSN of MOFs
-    MOF_tsn_AVER = MOF_tsn.mean()
-    combined_data_sum_aver.append(MOF_tsn_AVER)
+bins = [0, 1, 2, 3, 4, float('inf')]
+labels = ['TSN<1', '1=TSN<2', '2=TSN<3', '3=TSN<4', 'TSN=4']
 
-    # Max TSN of MOFs
-    MOF_tsn_MAX = MOF_tsn.max()
-    combined_data_sum_max.append(MOF_tsn_MAX)
+avg_tsn_list, max_tsn_list, count_list = [], [], []
+prop_rows = []
 
-    # Defining different performance intervals
-    bins = [0, 1, 2, 3, 4, float('inf')]
-    labels = ['TSN<1', '1<TSN<2', '2<TSN<3', '3<TSN<4', '4<TSN']
-    # Dividing MOFs into different intervals
-    data[sheet] = pd.cut(MOF_tsn, bins=bins, labels=labels, include_lowest=True)
-    # Calculating the number of MOFs with performance in different intervals
-    tsn_distribution = data[sheet].value_counts().sort_index()
-    # Calculating the proportion
-    tsn_proportion = tsn_distribution / tsn_distribution.sum()
-    tsn_proportion_sum.append(tsn_proportion)
+for sheet in sheet_names_sorted:
+    df = pd.read_excel(excel_file, sheet_name=sheet, engine='openpyxl')
+    s = pick_tsn_series(df)
 
-# Creating the proportion of DataFrame stores in each performance range
-tsn_proportion_df = pd.DataFrame(tsn_proportion_sum, index=sheet_names)
-tsn_proportion_df.columns = labels
+    # safety for missing TSN columns
+    if s is None:
+        # all zeros to keep plot running
+        avg_tsn_list.append(0.0)
+        max_tsn_list.append(0.0)
+        count_list.append(len(df))
+        prop_rows.append(pd.Series([0,0,0,0,0], index=labels))
+        continue
 
-# Outputing the figure
-batches = sheet_names
-percentages = tsn_proportion_df.T.to_dict('list')
-df = pd.DataFrame(percentages, index=labels)
-avg_tsn = combined_data_sum_aver
-max_tsn = combined_data_sum_max
-mof_counts = combined_data_sum_number
+    avg_tsn_list.append(float(s.mean(skipna=True)))
+    max_tsn_list.append(float(s.max(skipna=True)))
+    count_list.append(int(s.shape[0]))
 
-# Beautify Settings
+    # distribution by bins
+    cat = pd.cut(s, bins=bins, labels=labels, include_lowest=True)
+    vc = cat.value_counts().sort_index()  # aligned to labels
+    prop = (vc / max(vc.sum(), 1)).reindex(labels).fillna(0.0)
+    prop_rows.append(prop)
+
+tsn_prop_df = pd.DataFrame(prop_rows, index=sheet_names_sorted, columns=labels)
+
+# ---- build figure -------------------------------------------------------
 plt.rcParams.update({
     'font.size': 14,
     'axes.titlesize': 20,
@@ -74,103 +77,115 @@ plt.rcParams.update({
     'legend.fontsize': 13
 })
 
-# Building the figure
-fig, ax1 = plt.subplots(figsize = (9, 6))
+fig, ax1 = plt.subplots(figsize=(10, 6))
+indices = np.arange(len(sheet_names_sorted))
 bar_width = 0.4
 
-# Drawing a stacked bar chart
-df.T.plot(
-    kind = 'bar',
-    stacked = True,
-    ax = ax1,
-    color = ['lightyellow', 'yellow', 'orange', 'pink', 'purple'],
-    edgecolor = 'black',
-    width = bar_width
+# stacked bars (transpose to get stacks per cycle)
+(tsn_prop_df.rename_axis('Cycle')
+            .set_index(pd.Index(sheet_names_sorted, name='Cycle'))
+            ).plot(
+    kind='bar',
+    stacked=True,
+    ax=ax1,
+    edgecolor='black',
+    width=bar_width,
+    color=[color_dict[c] for c in tsn_prop_df.columns]
 )
 
-ax1.set_xlabel('Batch of MOFs')
-ax1.set_ylabel('Proportion of MOFs', labelpad = 15)
-ax1.set_title('Performance Distribution and Statistics of MOFs', pad = 20)
-ax1.set_ylim(0, 1)
-ax1.set_xticks(np.arange(len(batches)))
-ax1.set_xticklabels(batches, rotation = 0)
-
-# Secondary y-axes
-indices = np.arange(len(batches))
-
-# First right axis: Avg TSN
-ax2 = ax1.twinx()
-line_avg_tsn, = ax2.plot(indices, avg_tsn, color = 'crimson', marker = 'o', markersize = 8, linewidth = 2, label = 'Avg TSN', zorder = 2)
-ax2.set_ylabel('Average TSN', labelpad = 8, color = 'crimson', fontsize = 16)
-ax2.tick_params(axis = 'y', colors = 'crimson', pad = 5, labelsize = 14)
-ax2.spines['right'].set_color('crimson')
-ax2.set_ylim(min(avg_tsn)*0.9, max(avg_tsn)*1.1)
-
-# Second right axis: Max TSN
-ax3 = ax1.twinx()
-ax3.spines['right'].set_position(('outward', 80))
-line_max_tsn, = ax3.plot(indices, max_tsn, color = 'royalblue', marker = 's', markersize = 8, linewidth = 2, label = 'Max TSN', zorder = 2)
-ax3.set_ylabel('Max TSN', labelpad = 8, color = 'royalblue', fontsize = 16)
-ax3.tick_params(axis = 'y', colors = 'royalblue', pad = 5, labelsize = 14)
-ax3.spines['right'].set_color('royalblue')
-ax3.set_ylim(min(max_tsn)*0.9, max(max_tsn)*1.1)
-
-# Third right axis: MOF Count
-ax4 = ax1.twinx()
-ax4.spines['right'].set_position(('outward', 160))
-line_mof_counts, = ax4.plot(indices, mof_counts, color = 'forestgreen', marker = '^', markersize = 8, linewidth = 2, label = 'MOF Count', zorder = 2)
-ax4.set_ylabel('MOF Count', labelpad = 8, color = 'forestgreen', fontsize = 16)
-ax4.tick_params(axis = 'y', colors = 'forestgreen', pad = 5, labelsize = 14)
-ax4.spines['right'].set_color('forestgreen')
-ax4.set_ylim(min(mof_counts)*0.9, max(mof_counts)*1.1)
-ax4.yaxis.set_major_locator(MaxNLocator(nbins = 5))
-
-# Setting the X-axis scale
+ax1.set_xlabel('Cycle')
+ax1.set_ylabel('Proportion of MOFs', labelpad=12)
+ax1.set_title('MOF Performance Distribution and Statistics', pad=16)
+ax1.set_ylim(0, 1.0)
 ax1.set_xticks(indices)
-ax1.set_xticklabels(batches)
+ax1.set_xticklabels(sheet_names_sorted, rotation=0)
 
-# Adding legend
+# right axis 1: Avg TSN
+ax2 = ax1.twinx()
+line_avg, = ax2.plot(indices, avg_tsn_list, marker='o', linewidth=2, label='Avg TSN', zorder=3)
+# y-range padding with NaN safety
+avg_min = np.nanmin(avg_tsn_list) if len(avg_tsn_list) else 0.0
+avg_max = np.nanmax(avg_tsn_list) if len(avg_tsn_list) else 1.0
+if not np.isfinite(avg_min): avg_min = 0.0
+if not np.isfinite(avg_max): avg_max = 1.0
+pad = (avg_max - avg_min) * 0.1 if avg_max > avg_min else 0.5
+ax2.set_ylim(avg_min - pad, avg_max + pad)
+ax2.set_ylabel('Average TSN', labelpad=8)
+
+# right axis 2: Max TSN
+ax3 = ax1.twinx()
+ax3.spines['right'].set_position(('outward', 70))
+line_max, = ax3.plot(indices, max_tsn_list, marker='s', linewidth=2, label='Max TSN', zorder=3)
+mx_min = np.nanmin(max_tsn_list) if len(max_tsn_list) else 0.0
+mx_max = np.nanmax(max_tsn_list) if len(max_tsn_list) else 1.0
+if not np.isfinite(mx_min): mx_min = 0.0
+if not np.isfinite(mx_max): mx_max = 1.0
+pad2 = (mx_max - mx_min) * 0.1 if mx_max > mx_min else 0.5
+ax3.set_ylim(mx_min - pad2, mx_max + pad2)
+ax3.set_ylabel('Max TSN', labelpad=8)
+
+# right axis 3: MOF Count
+ax4 = ax1.twinx()
+ax4.spines['right'].set_position(('outward', 140))
+line_cnt, = ax4.plot(indices, count_list, marker='^', linewidth=2, label='MOF Count', zorder=3)
+ct_min = np.nanmin(count_list) if len(count_list) else 0.0
+ct_max = np.nanmax(count_list) if len(count_list) else 1.0
+if not np.isfinite(ct_min): ct_min = 0.0
+if not np.isfinite(ct_max): ct_max = 1.0
+pad3 = (ct_max - ct_min) * 0.1 if ct_max > ct_min else 1
+ax4.set_ylim(ct_min - pad3, ct_max + pad3)
+ax4.set_ylabel('MOF Count', labelpad=8)
+ax4.yaxis.set_major_locator(MaxNLocator(nbins=5))
+# ? show full numbers (disable scientific notation)
+ax4.ticklabel_format(style='plain', axis='y')
+ax4.get_yaxis().get_offset_text().set_visible(False)
+
+
+# legend (bars + 3 lines)
 lns1, labs1 = ax1.get_legend_handles_labels()
 lns2, labs2 = ax2.get_legend_handles_labels()
 lns3, labs3 = ax3.get_legend_handles_labels()
 lns4, labs4 = ax4.get_legend_handles_labels()
 ax1.legend(
-    lns1 + lns2 + lns3 + lns4,
-    labs1 + labs2 + labs3 + labs4,
-    loc = 'upper center',
-    bbox_to_anchor = (0.5, -0.15),
-    ncol = 3
+    lns1 + [line_avg, line_max, line_cnt],
+    labs1 + [labs2[0] if labs2 else 'Avg TSN',
+             labs3[0] if labs3 else 'Max TSN',
+             labs4[0] if labs4 else 'MOF Count'],
+    loc='upper center',
+    bbox_to_anchor=(0.5, -0.15),
+    ncol=3
 )
 
-# Dynamically adjust annotation positions
-def annotate_points(ax, x, y, color, dynamic_offset, format_str):
-    for i, txt in enumerate(y):
+# ---- annotations --------------------------------------------------------
+def annotate_points(ax, x, y, fmt, color=None, offset_fn=None):
+    for i, val in enumerate(y):
+        if not np.isfinite(val):
+            continue
+        dx, dy = offset_fn(i, val) if offset_fn else (0, 10)
         ax.annotate(
-            format_str.format(txt),
+            fmt.format(val),
             (x[i], y[i]),
             textcoords="offset points",
-            xytext=dynamic_offset(i, y[i]),
+            xytext=(dx, dy),
             ha='center',
-            color=color,
+            color=color if color else 'black',
             fontsize=9,
-            bbox=dict(boxstyle = "round, pad = 0.3", edgecolor = color, facecolor = "white"),
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="white", edgecolor=color if color else 'black'),
             zorder=10
         )
-    
-# Dynamic offset function to prevent label overlap
-def dynamic_offset(i, y_value, data_label):
-    if data_label == 'avg':
-        return (-20, 12) if i % 2 == 0 else (20, 12)
-    elif data_label == 'max':
-        return (-20, -15) if i % 2 == 0 else (20, -15)
-    elif data_label == 'count':
-        return (0, 15) if y_value > 30000 else (0, -15)
-    return (0, 10)
 
-# Add all annotations to ensure labels are on the top layer
-annotate_points(ax2, indices, avg_tsn, 'red', lambda i, y: dynamic_offset(i, y, 'avg'), '{:.2f}')
-annotate_points(ax3, indices, max_tsn, 'blue', lambda i, y: dynamic_offset(i, y, 'max'), '{:.2f}')
-annotate_points(ax4, indices, mof_counts, 'green', lambda i, y: dynamic_offset(i, y, 'count'), '{}')
+def offset_avg(i, v):  # slight up, zig-zag to avoid overlap
+    return (-18, 10) if i % 2 == 0 else (18, 10)
+
+def offset_max(i, v):  # slight down, zig-zag
+    return (-18, -14) if i % 2 == 0 else (18, -14)
+
+def offset_cnt(i, v):  # up if big, down if small
+    return (0, 14) if v >= (ct_min + ct_max) / 2 else (0, -16)
+
+annotate_points(ax2, indices, avg_tsn_list, '{:.2f}', color='tab:red',   offset_fn=offset_avg)
+annotate_points(ax3, indices, max_tsn_list, '{:.2f}', color='tab:blue',  offset_fn=offset_max)
+annotate_points(ax4, indices, count_list,    '{:d}',   color='tab:green', offset_fn=offset_cnt)
 
 plt.tight_layout()
 plt.savefig("Output.png", bbox_inches='tight')

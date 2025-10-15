@@ -6,87 +6,140 @@ import os
 import numpy as np
 import shutil
 import sys
+import re
 
-# Defining the file path to store the count
-counter_file_path = 'counter.json'
-output_excel = 'final_data.xlsx'
+COUNTER_JSON = "counter.json"
+EXCEL_PATH = "final_data.xlsx"
+TRAIN_XLSX = "TL_data_target_task_train.xlsx"
+TEST_XLSX = "TL_data_target_task_test.xlsx"
 
-# Attempts to read the current count value from the file, initializing it to 0 if the file does not exist
-try:
-    with open(counter_file_path, 'r') as file:
-        data = json.load(file)
-        counter = data['counter']
-except (FileNotFoundError, json.JSONDecodeError):
-    counter = 1
+# ---------- Helpers ----------
+def detect_last_cycle(xlsx_path: str) -> int:
+    """Return the highest 'Cycle N' found in the existing workbook, or 0 if none."""
+    if not os.path.exists(xlsx_path):
+        return 0
+    try:
+        xl = pd.ExcelFile(xlsx_path, engine="openpyxl")
+        nums = []
+        for s in xl.sheet_names:
+            m = re.fullmatch(r"Cycle\s+(\d+)", s)
+            if m:
+                nums.append(int(m.group(1)))
+        return max(nums) if nums else 0
+    except Exception:
+        return 0
 
-# Adding 1 to the count
-counter += 1
+def load_counter(counter_path: str, xlsx_path: str) -> int:
+    """Prefer counter.json when present and sane; otherwise infer from Excel."""
+    inferred = detect_last_cycle(xlsx_path)
+    try:
+        with open(counter_path, "r") as f:
+            val = int(json.load(f).get("counter", 0))
+            # if json counter lags behind workbook, trust workbook
+            return max(val, inferred)
+    except Exception:
+        return inferred
 
-df1 = pd.read_excel('TL_data_target_task_train.xlsx', engine='openpyxl')
-df2 = pd.read_excel('TL_data_target_task_test.xlsx', engine='openpyxl')
+def save_counter(counter_path: str, value: int):
+    with open(counter_path, "w", encoding="utf-8") as f:
+        json.dump({"counter": int(value)}, f)
 
+def tsn_max(df: pd.DataFrame) -> float:
+    """Max priority: TSN_pred -> TSN_simu -> TSN. Return -inf if nothing valid."""
+    if df is None:
+        return float("-inf")
+    for col in ("TSN_pred", "TSN_simu", "TSN"):
+        if col in df.columns:
+            s = pd.to_numeric(df[col], errors="coerce")
+            if s.notna().any():
+                return float(s.max(skipna=True))
+    return float("-inf")
+
+def pick_scores(df: pd.DataFrame, k: int = 50):
+    """
+    For ranking top-K:
+      - Prefer TSN_pred (Cycle >= 2)
+      - Fallback to TSN (Cycle 1)
+      - Fallback to TSN_simu as last resort
+    Returns (top_indices, score_col). If no valid column, returns ([], None).
+    """
+    for col in ("TSN_pred", "TSN", "TSN_simu"):
+        if col in df.columns:
+            scores = pd.to_numeric(df[col], errors="coerce").fillna(-np.inf).values
+            order = np.argsort(scores)[::-1]
+            return order[:min(k, len(order))], col
+    return np.array([], dtype=int), None
+
+# ---------- 1) Determine current cycle ----------
+last_cycle = load_counter(COUNTER_JSON, EXCEL_PATH)  # Cycle 1 already exists in your workbook
+counter = last_cycle + 1                              # new cycle number
+sheet_now = f"Cycle {counter}"
+sheet_prev = f"Cycle {counter-1}"
+
+# ---------- 2) Read and combine current train/test (vertical concat) ----------
+df1 = pd.read_excel(TRAIN_XLSX, engine="openpyxl")
+df2 = pd.read_excel(TEST_XLSX, engine="openpyxl")
 combined_df = pd.concat([df1, df2], ignore_index=True)
+# IMPORTANT: Do NOT rename columns by position; your files already carry TSN/TSN_simu/TSN_pred as designed.
 
-columns = combined_df.columns.tolist()
-if len(columns) >= 2:
-    columns[-2] = 'TSN_from_TL'
-    columns[-1] = 'TSN_from_RASPA'
-    combined_df.columns = columns
-    
-sheet_name = f'Cycle {counter}'
+# ---------- 3) Write the current cycle sheet ----------
+mode = "a" if os.path.exists(EXCEL_PATH) else "w"
+with pd.ExcelWriter(EXCEL_PATH, mode=mode, engine="openpyxl") as writer:
+    combined_df.to_excel(writer, sheet_name=sheet_now, index=False)
+save_counter(COUNTER_JSON, counter)
 
-# Checking whether the file exists
-if os.path.exists(output_excel):
-    # If the file exists, append a new worksheet
-    with pd.ExcelWriter(output_excel, mode='a', engine='openpyxl') as writer:
-        combined_df.to_excel(writer, sheet_name=sheet_name, index=False)
-else:
-    # If the file does not exist, create a new Excel file and write to it
-    with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
-        combined_df.to_excel(writer, sheet_name=sheet_name, index=False)
-        
-# Writing the updated count back to the file
-with open(counter_file_path, 'w', encoding='utf-8') as file:
-    json.dump({'counter': counter}, file)
-    
+# ---------- 4) Load current/previous sheets and compare maxima ----------
+df_now = pd.read_excel(EXCEL_PATH, sheet_name=sheet_now, engine="openpyxl")
+try:
+    df_last = pd.read_excel(EXCEL_PATH, sheet_name=sheet_prev, engine="openpyxl") if counter > 1 else None
+except ValueError:
+    df_last = None  # previous sheet missing; treat as -inf
 
-# Extracting the TSN and judging if the loop should be continued
-excel_file_path = 'final_data.xlsx'
-sheet_name_1 = f'Cycle {counter}'
-sheet_name_2 = f'Cycle {counter-1}'
+TSN_now_max  = tsn_max(df_now)
+TSN_last_max = tsn_max(df_last)
 
-df_last = pd.read_excel(excel_file_path, sheet_name = sheet_name_2, engine='openpyxl')
-df_now = pd.read_excel(excel_file_path, sheet_name = sheet_name_1, engine='openpyxl')
+# ---------- 5) Prepare directories ----------
+cwd = os.getcwd()
+parent_dir = os.path.dirname(cwd)
+best_edges_dir = os.path.join(parent_dir, "best_edges_mol")
+optimal_linker_dir = os.path.join(parent_dir, "optimal_linker")
 
-name_now = df_now.iloc[:, 0].values    
-TSN_now_max = max(df_now['TSN_from_TL'].values)
-if sheet_name_2 == 'Cycle 1':
-    TSN_last_max = max(df_last['TSN'].values)
-else:
-    TSN_last_max = max(df_last['TSN_from_TL'].values)
-
-# Judging
+# ---------- 6) If improved, copy top-50 linkers ----------
 if TSN_last_max <= TSN_now_max:
-    
-    # Extracting the linkers from the best MOFs, and copy these linkers from best_edges_mol to optimal_linker
-    new_MOF_index = np.argsort(df_now['TSN_from_TL'].values, axis = 0)[::-1]
-    best_MOF_index = new_MOF_index[:50]
-    for i in os.listdir('optimal_linker'):
-        os.remove('optimal_linker/' + i)
-    
-    for i in best_MOF_index:
-        best_MOF_name = name_now[i]
-        best_MOF_linker = best_MOF_name.split('best_mol_')[1].split(' ')[0] + '.mol'
-        
-        # Returning 'ADTL/' to copy the linkers
-        current_directory = os.getcwd()
-        parent_directory = os.path.dirname(current_directory)
-        os.chdir(parent_directory)
-        
-        shutil.copy('best_edges_mol/' + best_MOF_linker, 'optimal_linker/' + best_MOF_linker)
-        
-    # Outputing status code
+    # pick scores and top indices
+    top_idx, used_col = pick_scores(df_now, k=50)
+
+    # If no valid scores, treat as not improved/do nothing
+    if used_col is None or len(top_idx) == 0:
+        sys.exit(1)
+
+    # names from first column
+    name_now = df_now.iloc[:, 0].astype(str).values
+
+    # ensure target folder and clear files
+    os.makedirs(optimal_linker_dir, exist_ok=True)
+    for fname in os.listdir(optimal_linker_dir):
+        fpath = os.path.join(optimal_linker_dir, fname)
+        if os.path.isfile(fpath):
+            try:
+                os.remove(fpath)
+            except Exception:
+                pass
+
+    # copy .mol files (names must contain 'best_mol_')
+    for i in top_idx:
+        molf_name = name_now[i]
+        if "best_mol_" not in molf_name:
+            continue
+        linker_core = molf_name.split("best_mol_")[1].split(" ")[0]
+        src = os.path.join(best_edges_dir, f"{linker_core}.mol")
+        dst = os.path.join(optimal_linker_dir, f"{linker_core}.mol")
+        if os.path.exists(src):
+            try:
+                shutil.copy(src, dst)
+            except Exception:
+                pass  # ignore copy errors for robustness
+
     sys.exit(0)
-    
 else:
     sys.exit(1)

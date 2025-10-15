@@ -7,8 +7,8 @@ from sklearn.metrics import r2_score
 data = pd.read_excel('TL_data_target_task_train.xlsx', engine='openpyxl')
 dataset = data.dropna() # Null value
 
-y_simu = dataset.iloc[:, -1].values
-y_pred = dataset.iloc[:, -2].values
+y_simu = dataset['TSN_simu'].values
+y_pred = dataset['TSN_pred'].values
 print("y_simu = ", y_simu)
 print("y_pred = ", y_pred)
 
