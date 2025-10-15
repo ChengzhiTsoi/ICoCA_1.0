@@ -68,7 +68,7 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 │   ├── TL_data_target_task_train.xlsx           # MOFs used to fine-tune the pre-trained DNN model
 │   ├── Transferlearning_finetune.py           # Fine-tuning the original pre-trained DNN model with some new MOFs, followed by transfer learning on the remaining MOFs
 │   ├── Transferlearning_originaldnn.py           # Performing transfer learning using the original pre-trained DNN model to predict the performance of the remaining MOFs
-│   ├── TSN_cal.py           # Calculating MOF performance based on MC simulation data
+│   ├── TSN_cal.py           # Calculating MOF performance based on MC simulation data, and output adsorption capacity, selectivity as well as TSN value
 │   └── TSN_cal_verify.py           # Calculating MOF performance based on MC simulation data, used to verify the DNN model
 ├── tobacco_1.0/    # Tobacco files
 ├── 500000.sdf                  # Large substructure database
@@ -154,6 +154,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
