@@ -31,6 +31,15 @@ else
     fi
 fi
 
+if grep -Eiq '(^|[[:space:]])-?[Nn][Aa][Nn]([[:space:]]|$)' "$FrameworkName.mol"; then
+  echo "Detected NaN charges in $FrameworkName.mol, skipping GCMC."
+  {
+    flock -x 9
+    echo "$FrameworkName" >> ../../../error_list_gcmc.txt
+  } 9>> ../.gcmc_progress.lock
+  exit 1
+fi
+
 # Set RASPA environment variables. Environment: ADTL/LINUX/prepared_mofs/$FrameworkName
 export RASPA_DIR="${RASPA_PATH}"
 export PATH="$RASPA_DIR/bin:$PATH"
