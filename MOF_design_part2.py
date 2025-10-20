@@ -264,6 +264,7 @@ wb.save(output_file)
 
 # Inputing TSN
 df_output_file = pd.read_excel(output_file, engine='openpyxl')
+row_count_df_output_file = len(df_output_file)
 headers = list(df_output_file.columns)
 if 'TSN_simu' in headers:
     tsn_col_index = headers.index('TSN_simu') + 1
