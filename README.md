@@ -2,7 +2,7 @@
 *Automated Circular Design of High-Performance MOFs*
 
 <p align="center">
-  <img src="ICoCA_Process.png" width="800" alt="ICoCA Process">
+  <img src="ICoCA_Process.tif" width="800" alt="ICoCA Process">
 </p>
 
 
@@ -155,6 +155,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
