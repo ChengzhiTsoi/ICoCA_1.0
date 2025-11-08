@@ -1,5 +1,5 @@
 #!/bin/bash
-# Env: ADTL/gcmc_selected_mofs
+# Env: ADTL/gcmc_selected_structures
 
 FrameworkName=$1
 
@@ -31,13 +31,13 @@ python3 DatatoCif.py
 
 # Step 5: Move result to LINUX folder
 cd ../..
-cp "gcmc_selected_mofs/$FrameworkName/optimized_mof.cif" "LINUX/$FrameworkName.cif"
+cp "gcmc_selected_structures/$FrameworkName/optimized_structure.cif" "LINUX/$FrameworkName.cif"
 
 # Step 6: Progress tracking
 (
     flock -n 9 || exit 1
-    count=$(cat gcmc_selected_mofs/.progress_counter)
+    count=$(cat gcmc_selected_structures/.progress_counter)
     count=$((count + 1))
-    echo $count > gcmc_selected_mofs/.progress_counter
+    echo $count > gcmc_selected_structures/.progress_counter
     echo -ne "Progress: $count minimized\r"
-) 9> gcmc_selected_mofs/.progress_counter.lock
+) 9> gcmc_selected_structures/.progress_counter.lock

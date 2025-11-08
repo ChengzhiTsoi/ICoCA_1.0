@@ -1,5 +1,5 @@
 #!/bin/bash
-# Environment: ADTL/LINUX/prepared_mofs
+# Environment: ADTL/LINUX/prepared_structures
 set -euo pipefail
 
 FrameworkName="$1"
@@ -40,7 +40,7 @@ if grep -Eiq '(^|[[:space:]])-?[Nn][Aa][Nn]([[:space:]]|$)' "$FrameworkName.mol"
   exit 1
 fi
 
-# Set RASPA environment variables. Environment: ADTL/LINUX/prepared_mofs/$FrameworkName
+# Set RASPA environment variables. Environment: ADTL/LINUX/prepared_structures/$FrameworkName
 export RASPA_DIR="${RASPA_PATH}"
 export PATH="$RASPA_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$RASPA_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"

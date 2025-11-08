@@ -1,5 +1,5 @@
 #!/bin/bash
-# Env: ADTL/LINUX/MOF_verify
+# Env: ADTL/LINUX/Structure_verify
 
 FrameworkName=$1
 
@@ -35,8 +35,8 @@ cp "LINUX/MOF_verify/$FrameworkName/optimized_mof.cif" "LINUX/$FrameworkName.cif
 # Update progress
 (
     flock -n 9 || exit 1
-    count=$(cat LINUX/MOF_verify/.verify_progress)
+    count=$(cat LINUX/Structure_verify/.verify_progress)
     count=$((count + 1))
-    echo $count > LINUX/MOF_verify/.verify_progress
+    echo $count > LINUX/Structure_verify/.verify_progress
     echo -ne "Progress: $count verified\r"
-) 9> LINUX/MOF_verify/.verify_progress.lock
+) 9> LINUX/Structure_verify/.verify_progress.lock

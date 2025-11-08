@@ -28,28 +28,28 @@ echo ">>> Starting AutoDesign..."
 
 
 part1(){
-# Automatically design of MOFs. Env: ADTL
-python3 MOF_design_part1.py
+# Automatically design of Structures. Env: ADTL
+python3 Structure_design_part1.py
 }
 
 
 
 part2(){
-# Dividing MOFs into train set and test set. Env: ADTL
-python3 MOF_design_part2.py
+# Dividing structures into train set and test set. Env: ADTL
+python3 Structure_design_part2.py
 
 
 # Energy minimization. Env: ADTL
-cd gcmc_selected_mofs
+cd gcmc_selected_structures
 
 # Remove Windows-style carriage returns if any
-sed -i 's/\r$//' MOFs_gcmc.csv
-N_samp=$(wc -l < MOFs_gcmc.csv)
+sed -i 's/\r$//' Structures_gcmc.csv
+N_samp=$(wc -l < Structures_gcmc.csv)
 MAX_JOBS=$MAX_JOBS
 
 # Clean up old folders and outputs (only once)
-echo "Cleaning previous MOF directories..."
-cat MOFs_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
+echo "Cleaning previous Structure directories..."
+cat Structures_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
     rm -rf "$FrameworkName"
     rm -f "../LINUX/$FrameworkName.cif"
 done
@@ -60,7 +60,7 @@ echo 0 > $progress_file
 rm -f $progress_file.lock
 
 # Run energy minimization with GNU parallel
-cat MOFs_gcmc.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../Energy_minimization.sh {}
+cat Structures_gcmc.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../Energy_minimization.sh {}
 echo -e "All minimizations completed!"
 
 # Clean up progress file
@@ -75,14 +75,14 @@ cd LINUX
 trap 'pkill -P $$' EXIT
 
 # Preprocessing
-sed -i 's/\r$//' MOFs_gcmc.csv
-N_samp=$(wc -l < MOFs_gcmc.csv)
+sed -i 's/\r$//' Structures_gcmc.csv
+N_samp=$(wc -l < Structures_gcmc.csv)
 MAX_JOBS=$MAX_JOBS
 topdir=$PWD
 
 # Step 1: Clean up old folders
 echo "Cleaning EQeq temporary folders..."
-cat MOFs_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
+cat Structures_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
     rm -rf "$FrameworkName"
 done
 
@@ -92,18 +92,18 @@ echo 0 > $progress_file
 rm -f "$progress_file.lock"
 
 # Step 3: Run EQeq in parallel
-cat MOFs_gcmc.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../EQeq_calculation.sh {}
+cat Structures_gcmc.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../EQeq_calculation.sh {}
 echo -e "All EQeq charge calculations completed!"
 
 # Step 4: Extract mol files
-echo "Extracting EQeq mol files to prepared_mofs..."
-mkdir -p prepared_mofs   # Create if it doesn't exist
-cat MOFs_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
-    cp "$FrameworkName/$FrameworkName.cif_EQeq_ewald_1.20_-2.00.mol" "prepared_mofs/$FrameworkName.mol"
+echo "Extracting EQeq mol files to prepared_structures..."
+mkdir -p prepared_structures   # Create if it doesn't exist
+cat Structures_gcmc.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
+    cp "$FrameworkName/$FrameworkName.cif_EQeq_ewald_1.20_-2.00.mol" "prepared_structures/$FrameworkName.mol"
 done
 
-# Step 5: Copy CSV to prepared_mofs
-cp MOFs_gcmc.csv prepared_mofs/
+# Step 5: Copy CSV to prepared_structures
+cp Structures_gcmc.csv prepared_structures/
 echo "All energy minimization and charge calculation are finished."
 
 # Final cleanup
@@ -112,14 +112,14 @@ rm -f "$progress_file" "$progress_file.lock"
 
 # Modifing the simulation.input. Env: ADTL/LINUX
 topdir=$PWD
-cd prepared_mofs
-N_samp=$(wc -l < MOFs_gcmc.csv) 
+cd prepared_structures
+N_samp=$(wc -l < Structures_gcmc.csv) 
 
-sed -i 's/\r$//' MOFs_gcmc.csv
+sed -i 's/\r$//' Structures_gcmc.csv
 for ((i=1; i<N_samp; i++))
 do
     Row=$((i + 1))
-    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' MOFs_gcmc.csv)
+    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' Structures_gcmc.csv)
     
     if [ -d "$FrameworkName" ]; then
         rm -r $FrameworkName 2>/dev/null || true
@@ -238,16 +238,16 @@ done
 echo "All simulation files are ready."
 
 
-# Running GCMC. Env: ADTL/LINUX/prepared_mofs
-csvfile="MOFs_gcmc.csv"
+# Running GCMC. Env: ADTL/LINUX/prepared_structures
+csvfile="Structures_gcmc.csv"
 
 echo "Validating .mol files..."
-mapfile -t all_mofs < <(tail -n +2 "$csvfile" | awk '{print $1}')
+mapfile -t all_structures < <(tail -n +2 "$csvfile" | awk '{print $1}')
 
-valid_mofs=()
-for name in "${all_mofs[@]}"; do
+valid_structures=()
+for name in "${all_structures[@]}"; do
     if [[ -f "$name/$name.mol" ]]; then
-        valid_mofs+=("$name")
+        valid_structures+=("$name")
     else
         echo "Warning: File $name.mol does not exist. Skipping..."
     fi
@@ -256,14 +256,14 @@ done
 # Initialize progress tracking
 echo 0 > .gcmc_progress
 rm -f .gcmc_progress.lock
-echo "${#valid_mofs[@]}" > .gcmc_total
+echo "${#valid_structures[@]}" > .gcmc_total
 
 # concurrent execution
 chmod 755 ../../Adsorption_simulation.sh   # grant execute permission
 
 echo "Launching GCMC simulations..."
 
-printf "%s\n" "${valid_mofs[@]}" \
+printf "%s\n" "${valid_structures[@]}" \
   | parallel --line-buffer -j "${MAX_JOBS:-1}" ../../Adsorption_simulation.sh {}
 
 # Final output
@@ -272,15 +272,15 @@ echo "All GCMC simulations completed successfully."
 echo "Final Progress: $(< .gcmc_progress) / $(< .gcmc_total)"
 
 
-# Extracting adsorption data. Env: ADTL/LINUX/prepared_mofs
+# Extracting adsorption data. Env: ADTL/LINUX/prepared_structures
 topdir=$PWD
-N_samp=$(wc -l < MOFs_gcmc.csv) 
+N_samp=$(wc -l < Structures_gcmc.csv) 
 
-sed -i 's/\r$//' MOFs_gcmc.csv
+sed -i 's/\r$//' Structures_gcmc.csv
 for ((i=1; i<N_samp; i++))
 do
     Row=$((i + 1))
-    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' MOFs_gcmc.csv)
+    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' Structures_gcmc.csv)
     
     if [ ! -d $FrameworkName/Output/System_0/ ]; then
         echo " $FrameworkName have not been successfully calculated, skipping..."
@@ -300,7 +300,7 @@ do
     python3 TSN_cal.py
     rm N.txt
     cd ..
-    cd LINUX/prepared_mofs
+    cd LINUX/prepared_structures
     
 done
 cd ../..
@@ -316,40 +316,40 @@ cd TL
 python3 Transferlearning_finetune.py
 
 
-# Getting the TSN top 20% MOFs. Env: ADTL/TL
-if [[ -d "MOF_verify" ]]; then
-    echo "Directory MOF_verify exists. Removing it..."
-    rm -rf MOF_verify
+# Getting the TSN top 20% Structures. Env: ADTL/TL
+if [[ -d "Structure_verify" ]]; then
+    echo "Directory Structure_verify exists. Removing it..."
+    rm -rf Structure_verify
 fi
 
-mkdir MOF_verify
-cp "MOF_verify_model.csv" "MOF_verify/"
+mkdir Structure_verify
+cp "Structure_verify_model.csv" "Structure_verify/"
 
 cd ..
 
-cp "gcmc_selected_mofs/lammps_input.in" "TL/MOF_verify/"
-cp "gcmc_selected_mofs/DatatoCif.py" "TL/MOF_verify/"
+cp "gcmc_selected_structures/lammps_input.in" "TL/Structure_verify/"
+cp "gcmc_selected_structures/DatatoCif.py" "TL/Structure_verify/"
 
-cd TL/MOF_verify
-N_samp=$(wc -l < MOF_verify_model.csv) 
+cd TL/Structure_verify
+N_samp=$(wc -l < Structure_verify_model.csv) 
 
-sed -i 's/\r$//' MOF_verify_model.csv
+sed -i 's/\r$//' Structure_verify_model.csv
 for ((i=1; i<N_samp; i++))
 do
     Row=$((i + 1))
-    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' MOF_verify_model.csv)
-    cp "${topdir}/gcmc_rest_mofs/$FrameworkName.cif" "${topdir}/TL/MOF_verify/"
+    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' Structure_verify_model.csv)
+    cp "${topdir}/gcmc_rest_structures/$FrameworkName.cif" "${topdir}/TL/Structure_verify/"
 done
 
 cd ../..
-scp -r TL/MOF_verify LINUX
+scp -r TL/Structure_verify LINUX
 
 
-# Energy minimization (verified MOFs). Env: ADTL
+# Energy minimization (verified Structures). Env: ADTL
 topdir=$PWD
-cd LINUX/MOF_verify
+cd LINUX/Structure_verify
 MAX_JOBS=$MAX_JOBS
-csv_file="MOF_verify_model.csv"
+csv_file="Structure_verify_model.csv"
 
 # Remove Windows-style carriage returns
 sed -i 's/\r$//' "$csv_file"
@@ -371,20 +371,20 @@ rm -f "$progress_file.lock"
 cat "$csv_file" | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../../Energy_minimization_verify.sh {}
 
 # Final message
-echo -e "All MOF verifications completed!"
+echo -e "All Structure verifications completed!"
 rm -f "$progress_file" "$progress_file.lock"
 
 
-# EQeq charge assignment for verified MOFs. Env: ADTL/LINUX/MOF_verify
+# EQeq charge assignment for verified Structures. Env: ADTL/LINUX/Structure_verify
 MAX_JOBS=$MAX_JOBS
-csv_file="MOF_verify_model.csv"
+csv_file="Structure_verify_model.csv"
 
 # Preprocess CSV
 sed -i 's/\r$//' "$csv_file"
 N_samp=$(wc -l < "$csv_file")
 
 # Copy csv to LINUX (if needed)
-cp "$csv_file" ../MOF_verify_model.csv
+cp "$csv_file" ../Structure_verify_model.csv
 cd ../
 cd LINUX
 
@@ -395,37 +395,37 @@ rm -f "$progress_file.lock"
 
 # Step 1: Clean up old folders
 echo "Cleaning EQeq temporary folders..."
-cat MOF_verify_model.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
+cat Structure_verify_model.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
     rm -rf "$FrameworkName"
 done
 
 # Run EQeq using parallel
-cat MOF_verify_model.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../EQeq_calculation.sh {}
+cat Structure_verify_model.csv | tail -n +2 | awk '{print $1}' | parallel -j "${MAX_JOBS:-1}" ../EQeq_calculation.sh {}
 
-echo -e "All verified MOF charges calculated!"
+echo -e "All verified Structure charges calculated!"
 rm -f "$progress_file" "$progress_file.lock"
 
 # Extract mol files
 echo "Extracting EQeq .mol files..."
-mkdir -p prepared_mofs   # Create if it doesn't exist
-cat MOF_verify_model.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
-    mv "$FrameworkName/$FrameworkName.cif_EQeq_ewald_1.20_-2.00.mol" "prepared_mofs/$FrameworkName.mol"
+mkdir -p prepared_structures   # Create if it doesn't exist
+cat Structure_verify_model.csv | tail -n +2 | awk '{print $1}' | while read FrameworkName; do
+    mv "$FrameworkName/$FrameworkName.cif_EQeq_ewald_1.20_-2.00.mol" "prepared_structures/$FrameworkName.mol"
 done
 
-cp MOF_verify_model.csv prepared_mofs/
+cp Structure_verify_model.csv prepared_structures/
 echo "All EQeq mol files extracted."
 
 
 # Modifing the simulation.input. Env: ADTL/LINUX
 topdir=$PWD
-cd prepared_mofs
-N_samp=$(wc -l < MOF_verify_model.csv) 
+cd prepared_structures
+N_samp=$(wc -l < Structure_verify_model.csv) 
 
-sed -i 's/\r$//' MOF_verify_model.csv
+sed -i 's/\r$//' Structure_verify_model.csv
 for ((i=1; i<N_samp; i++))
 do
     Row=$((i + 1))
-    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' MOF_verify_model.csv)
+    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' Structure_verify_model.csv)
     
     if [ -d "$FrameworkName" ]; then
         rm -r $FrameworkName 2>/dev/null || true
@@ -544,16 +544,16 @@ done
 echo "All simulation files are ready."
 
 
-# Running GCMC. Env: ADTL/LINUX/prepared_mofs
-csvfile="MOFs_gcmc.csv"
+# Running GCMC. Env: ADTL/LINUX/prepared_structures
+csvfile="Structures_gcmc.csv"
 
 echo "Validating .mol files..."
-mapfile -t all_mofs < <(tail -n +2 "$csvfile" | awk '{print $1}')
+mapfile -t all_structures < <(tail -n +2 "$csvfile" | awk '{print $1}')
 
-valid_mofs=()
-for name in "${all_mofs[@]}"; do
+valid_structures=()
+for name in "${all_structures[@]}"; do
     if [[ -f "$name/$name.mol" ]]; then
-        valid_mofs+=("$name")
+        valid_structures+=("$name")
     else
         echo "Warning: File $name.mol does not exist. Skipping..."
     fi
@@ -562,7 +562,7 @@ done
 # Initialize progress tracking
 echo 0 > .gcmc_progress
 rm -f .gcmc_progress.lock
-echo "${#valid_mofs[@]}" > .gcmc_total
+echo "${#valid_structures[@]}" > .gcmc_total
 
 # concurrent execution
 chmod 755 ../../Adsorption_simulation.sh   # grant execute permission
@@ -578,15 +578,15 @@ echo "All GCMC simulations completed successfully."
 echo "Final Progress: $(< .gcmc_progress) / $(< .gcmc_total)"
 
 
-# Extracting adsorption data. Env: ADTL/LINUX/prepared_mofs
+# Extracting adsorption data. Env: ADTL/LINUX/prepared_structures
 topdir=$PWD
-N_samp=$(wc -l < MOF_verify_model.csv) 
+N_samp=$(wc -l < Structure_verify_model.csv) 
 
-sed -i 's/\r$//' MOF_verify_model.csv
+sed -i 's/\r$//' Structure_verify_model.csv
 for ((i=1; i<N_samp; i++))
 do
     Row=$((i + 1))
-    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' MOF_verify_model.csv)
+    read FrameworkName <<< $(awk 'FNR=='$Row' {print $1}' Structure_verify_model.csv)
     
     if [ ! -d $FrameworkName/Output/System_0/ ]; then
         echo " $FrameworkName have not successfully calculated, skipping..."
@@ -605,7 +605,7 @@ do
     python3 TSN_cal_verify.py
     rm N.txt
     cd ..
-    cd LINUX/prepared_mofs
+    cd LINUX/prepared_structures
 done
 cd ../..
 return 0
@@ -620,7 +620,7 @@ source "$current_dir/required_path.sh"
 
 modify_train_test_split() {
       local new_rate=$1
-      sed -i "s|train_test=.*|train_test=$new_rate|" MOF_design_part2.py
+      sed -i "s|train_test=.*|train_test=$new_rate|" Structure_design_part2.py
 }
 
 
@@ -643,27 +643,27 @@ new_cycle_number_linker=1
 
 echo '{"counter": 1}' > TL/counter.json
 
-sed -i 's/train_test=.*/train_test=0.1/' MOF_design_part2.py
-sed -i 's/cycle_number=.*/cycle_number=1/' MOFs_summary.py
+sed -i 's/train_test=.*/train_test=0.1/' Structure_design_part2.py
+sed -i 's/cycle_number=.*/cycle_number=1/' Structures_summary.py
 sed -i 's/cycle_number=.*/cycle_number=0/' Linkers_summary.py
 
 rm -rf Linker_summary/*
-rm -rf New_MOF_summary/*
+rm -rf New_structure_summary/*
 
 
 while true; do
     start_time=$(date +%s.%N)
     
-    # Running part1 to get some new MOFs. Env: ADTL
+    # Running part1 to get some new Structures. Env: ADTL
     part1
-    python3 MOFs_summary.py
+    python3 Structures_summary.py
     python3 Linkers_summary.py
 
     # Modify the parameter to optimize the model
-    sed -i "s|cycle_number=.*|cycle_number=$new_cycle_number_mof|" MOFs_summary.py
+    sed -i "s|cycle_number=.*|cycle_number=$new_cycle_number_mof|" Structures_summary.py
     sed -i "s|cycle_number=.*|cycle_number=$new_cycle_number_linker|" Linkers_summary.py
     
-    new_cycle_number_mof=$(echo "$new_cycle_number_mof + 1" | bc)
+    new_cycle_number_structure=$(echo "$new_cycle_number_structure + 1" | bc)
     new_cycle_number_linker=$(echo "$new_cycle_number_linker + 1" | bc)
     
     # Running part2, getting the status code, and judging if the model is accuracy. Env: ADTL
@@ -681,12 +681,12 @@ while true; do
         cd TL
         python3 Transferlearning_originaldnn.py
         
-        # Judging if the max TSN will bigger than the maximum of last batch of MOFs
+        # Judging if the max TSN will bigger than the maximum of last batch of Structures
         python3 Data_summize.py
         status_2=$?
         cd ..
         
-        # If so, choose the TSN top 20% MOFs, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
+        # If so, choose the TSN top 20% Structures, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
         if [ $status_2 -eq 0 ]; then
             echo "Performance has improved after retraining. Restarting the loop..."
             cd ..
@@ -723,13 +723,13 @@ while true; do
         if [ $status_1 -eq 0 ]; then
             echo "Model accuracy meets the requirement."
         
-            # Judging if the max TSN will bigger than the maximum of last batch of MOFs
+            # Judging if the max TSN will bigger than the maximum of last batch of Structures
             cd TL
             python3 Data_summize.py
             status_2=$?
             cd ..
             
-            # If so, choose the TSN top 20% MOFs, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
+            # If so, choose the TSN top 20% Structures, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
             if [ $status_2 -eq 0 ]; then
                 echo "Performance has improved after retraining. Restarting the loop..."
                 end_time=$(date +%s.%N)
@@ -779,12 +779,12 @@ while true; do
                     cd TL
                     python3 Transferlearning_originaldnn.py
                     
-                    # Judging if the max TSN will bigger than the maximum of last batch of MOFs
+                    # Judging if the max TSN will bigger than the maximum of last batch of Structures
                     python3 Data_summize.py
                     status_2=$?
                     cd ..
                     
-                    # If so, choose the TSN top 20% MOFs, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
+                    # If so, choose the TSN top 20% Structures, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
                     if [ $status_2 -eq 0 ]; then
                         echo "Performance has improved after retraining. Restarting the loop..."
                         end_time=$(date +%s.%N)
@@ -820,13 +820,13 @@ while true; do
                     if [ $status_1 -eq 0 ]; then
                         echo "Model accuracy meets the requirement."
                     
-                        # Judging if the max TSN will bigger than the maximum of last batch of MOFs
+                        # Judging if the max TSN will bigger than the maximum of last batch of Structures
                         cd TL
                         python3 Data_summize.py
                         status_2=$?
                         cd ..
                         
-                        # If so, choose the TSN top 20% MOFs, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
+                        # If so, choose the TSN top 20% Structures, and take the name of their linkers from their name, and copy these linkers from best_edges_mol to optimal_linker
                         if [ $status_2 -eq 0 ]; then
                             echo "Performance has improved after retraining. Restarting the loop..."
                             end_time=$(date +%s.%N)
@@ -893,8 +893,8 @@ done
 echo "The script ends."
 
 sed -i 's/cycle_number=.*/cycle_number="final"/g' Linkers_summary.py
-sed -i 's/cycle_number=.*/cycle_number="final"/g' MOFs_summary.py
-python3 MOFs_summary.py
+sed -i 's/cycle_number=.*/cycle_number="final"/g' Structures_summary.py
+python3 Structures_summary.py
 python3 Linkers_summary.py
 
 cd TL
