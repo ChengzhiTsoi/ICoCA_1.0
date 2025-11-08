@@ -19,7 +19,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Load dataset (with header)
 dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, engine = 'openpyxl')
 num_columns_test = len(dataset_test_tt.columns)
-MOF_name = dataset_test_tt.iloc[:, 0].values
+Structure_name = dataset_test_tt.iloc[:, 0].values
 
 # Features: skip name col, exclude the last 4 derived/label cols
 X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
@@ -75,7 +75,7 @@ ws.cell(row = 1, column = pred_col).value = 'TSN_pred'
 # Fast name -> row index mapping
 name_to_row = {str(df.iloc[j, 0]).strip(): j for j in range(row_count)}
 
-for name, pred in zip(MOF_name, y_pred_tt):
+for name, pred in zip(Structure_name, y_pred_tt):
     key = str(name).strip()
     idx = name_to_row.get(key, None)
     if idx is not None:

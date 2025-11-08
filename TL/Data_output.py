@@ -94,8 +94,8 @@ bar_width = 0.4
 )
 
 ax1.set_xlabel('Cycle')
-ax1.set_ylabel('Proportion of MOFs', labelpad=12)
-ax1.set_title('MOF Performance Distribution and Statistics', pad=16)
+ax1.set_ylabel('Proportion of Structures', labelpad=12)
+ax1.set_title('Structure Performance Distribution and Statistics', pad=16)
 ax1.set_ylim(0, 1.0)
 ax1.set_xticks(indices)
 ax1.set_xticklabels(sheet_names_sorted, rotation=0)
@@ -124,17 +124,17 @@ pad2 = (mx_max - mx_min) * 0.1 if mx_max > mx_min else 0.5
 ax3.set_ylim(mx_min - pad2, mx_max + pad2)
 ax3.set_ylabel('Max TSN', labelpad=8)
 
-# right axis 3: MOF Count
+# right axis 3: Structure Count
 ax4 = ax1.twinx()
 ax4.spines['right'].set_position(('outward', 140))
-line_cnt, = ax4.plot(indices, count_list, marker='^', linewidth=2, label='MOF Count', zorder=3)
+line_cnt, = ax4.plot(indices, count_list, marker='^', linewidth=2, label='Structure Count', zorder=3)
 ct_min = np.nanmin(count_list) if len(count_list) else 0.0
 ct_max = np.nanmax(count_list) if len(count_list) else 1.0
 if not np.isfinite(ct_min): ct_min = 0.0
 if not np.isfinite(ct_max): ct_max = 1.0
 pad3 = (ct_max - ct_min) * 0.1 if ct_max > ct_min else 1
 ax4.set_ylim(ct_min - pad3, ct_max + pad3)
-ax4.set_ylabel('MOF Count', labelpad=8)
+ax4.set_ylabel('Structure Count', labelpad=8)
 ax4.yaxis.set_major_locator(MaxNLocator(nbins=5))
 # ? show full numbers (disable scientific notation)
 ax4.ticklabel_format(style='plain', axis='y')
@@ -150,7 +150,7 @@ ax1.legend(
     lns1 + [line_avg, line_max, line_cnt],
     labs1 + [labs2[0] if labs2 else 'Avg TSN',
              labs3[0] if labs3 else 'Max TSN',
-             labs4[0] if labs4 else 'MOF Count'],
+             labs4[0] if labs4 else 'Structure Count'],
     loc='upper center',
     bbox_to_anchor=(0.5, -0.15),
     ncol=3

@@ -138,7 +138,7 @@ trained_model.eval()
 # Load test set
 dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, engine= 'openpyxl')
 num_columns_test = len(dataset_test_tt.columns)
-MOF_name = dataset_test_tt.iloc[:, 0].values
+Structure_name = dataset_test_tt.iloc[:, 0].values
 
 # Exclude last 4 derived/label columns just like train
 X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
@@ -163,7 +163,7 @@ ws.cell(row=1, column = pred_col).value = 'TSN_pred'
 # Fast name -> row mapping
 name_to_row = {str(df_test.iloc[j, 0]).strip(): j for j in range(row_count)}
 
-for name, pred in zip(MOF_name, y_pred_tt):
+for name, pred in zip(Structure_name, y_pred_tt):
     key = str(name).strip()
     if key in name_to_row:
         excel_row = name_to_row[key] + 2 # +2 because row 1 is header
@@ -175,8 +175,8 @@ book.save(path_excel)
 order = np.argsort(y_pred_tt)[::-1] # indices sorted by prediction desc
 choose_number = max(1, int(round(0.2 * len(order))))
 top_indices = order[:choose_number]
-selected_names = [str(MOF_name[idx]) for idx in top_indices]
+selected_names = [str(Structure_name[idx]) for idx in top_indices]
 # drop ".cif" suffix if present
 selected_names = [n[:-4] if n.lower().endswith('.cif') else n for n in selected_names]
-pd.DataFrame(selected_names, columns = ['Name']).to_csv('MOF_verify_model.csv', index = False, encoding = 'utf-8')
+pd.DataFrame(selected_names, columns = ['Name']).to_csv('Structure_verify_model.csv', index = False, encoding = 'utf-8')
 print('The script Transferlearning_finetune.py has completed.')

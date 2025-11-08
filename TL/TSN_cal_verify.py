@@ -28,7 +28,7 @@ ws.cell(row = 1, column = col_count + 4).value = 'TSN_simu'
 # Loop through txt lines
 while i <= num_lines - 6:
     if 'best_mol_' in lines[i]:
-        MOF_name = lines[i].strip()
+        Structure_name = lines[i].strip()
         N_CH4 = lines[i + 1]
         N_C2 = lines[i + 2]
         N_C3 = lines[i + 3]
@@ -41,7 +41,7 @@ while i <= num_lines - 6:
         N4 = float(N_CO2.split()[5])  # CO2
         N5 = float(N_H2S.split()[5])  # H2S
 
-        MOF_name_full = MOF_name + '.cif'
+        Structure_name_full = Structure_name + '.cif'
         N_total = N4 + N5
 
         # Avoid division by zero
@@ -57,7 +57,7 @@ while i <= num_lines - 6:
         # Write TSN, N4, N5, and S_total to Excel
         for j in range(row_count):
             name = df.iloc[j, 0]
-            if name == MOF_name_full:
+            if name == Structure_name_full:
                 ws.cell(row = j + 1, column = col_count + 1).value = N5 # H2S
                 ws.cell(row = j + 1, column = col_count + 2).value = N4 # CO2
                 ws.cell(row = j + 1, column = col_count + 3).value = S_total
