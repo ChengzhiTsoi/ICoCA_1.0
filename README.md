@@ -1,12 +1,12 @@
 # Iterative Construction of Crystal Adsorbent (ICoCA)
-*Automated Circular Design of High-Performance MOFs*
+*Automated Circular Design of High-Performance Crystalline Porous Frameworks*
 
 <p align="center">
   <img src="ICoCA_Process.png" width="800" alt="ICoCA Process">
 </p>
 
 
-This repository contains the transfer learning model and the automated design submission script codes for hypothetical MOFs, along with the corresponding datasets described in our paper.
+This repository contains the transfer learning model and the automated design submission script codes for hypothetical CPFs, along with the corresponding datasets described in our paper.
 
 ## Table of Contents
 - [Project Description](#project-description)
@@ -19,7 +19,7 @@ This repository contains the transfer learning model and the automated design su
 - [Citation](#citation)
 
 ## Project Description
-This project focuses on the automated design of high-performance MOFs (Metal-Organic Frameworks) through material fingerprints and transfer learning. The repository includes code for running transfer learning models, automating the MOF design process, and managing related datasets. This project aims to accelerate the discovery and optimization of hypothetical MOFs by predicting performance and facilitating efficient molecular simulation workflows.
+This project focuses on the automated design of high-performance CPFs (Crystalline Porous Frameworks) through material fingerprints and transfer learning. The repository includes code for running transfer learning models, automating the CPF design process, and managing related datasets. This project aims to accelerate the discovery and optimization of hypothetical CPFs by predicting performance and facilitating efficient molecular simulation workflows.
 
 ## Project Organization
 
@@ -33,61 +33,61 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 ├── best_edges_cif/        # Selected substructure CIF files
 ├── best_edges_mol/        # Selected substructure MOL files
 ├── best_edges_png/        # Selected substructure PNG image files
-├── gcmc_rest_mofs/        # MOFs not requiring GCMC simulations
-├── gcmc_selected_mofs/    # Folder of MOFs selected for GCMC simulations
+├── gcmc_rest_structures/        # Structures not requiring GCMC simulations
+├── gcmc_selected_structures/    # Folder of structures selected for GCMC simulations
 │   ├── DatatoCif.py             # Convert LAMMPS output .DATA files to .CIF
-│   ├── lammps_input.in          # Energy minimization of MOFs
-│   └── MOFs_gcmc.csv         # MOFs for GCMC simulations
+│   ├── lammps_input.in          # Energy minimization of CPFs
+│   └── Structures_gcmc.csv         # CPFs for GCMC simulations
 ├── Linker_summary/        # Linker summaries
 ├── LINUX/                # Linux environment files
 │   ├── EQeq/          # Charged mol files required for RASPA calculations
 │   ├── gcmc_required/             # Required files for running RASPA, including forcefield and molecular model files
-│   ├── prepared_mofs/                      # MOF files ready for RASPA MC simulation
-│   ├── MOFs_gcmc.csv         # MOFs for MC simulation
+│   ├── prepared_structures/                      # Structure files ready for RASPA MC simulation
+│   ├── Structures_gcmc.csv         # CPFs for MC simulation
 │   └── simulation.input         # Input script for running RASPA
-├── new_designed_mofs/     # All newly designed MOFs
-│   └── All_designed_mofs.xlsx           # All newly designed MOFs, including unit cell sizes, the one-hot encoding of their metal centers and topology structures, MACCS fingerprints  of organic linkers (255-bit encoding), and performance predictions from the pre-trained deep neural network model
-├── New_MOF_summary/       # Summaries of new MOFs
+├── new_designed_structures/     # All newly designed CPFs
+│   └── All_designed_structures.xlsx           # All newly designed CPFs, including unit cell sizes, the one-hot encoding of their metal centers and topology structures, MACCS fingerprints  of organic linkers (255-bit encoding), and performance predictions from the pre-trained deep neural network model
+├── New_structure_summary/       # Summaries of new CPFs
 ├── optimal_linker/        # Optimal linkers
 ├── TL/    # Containing files related to transfer learning data
 │   ├── __pycache__/           # Python cache files
-│   ├── MOF_verify/           # MOFs used for verifying DNN model performance
+│   ├── Structure_verify/           # CPFs used for verifying DNN model performance
 │   │   ├── DatatoCif.py             # Convert LAMMPS output .DATA files to .CIF files
-│   │   ├── lammps_input.in          # LAMMPS script for energy minimization of MOFs
-│   │   └── MOFs_verify_model.csv         # MOFs for MC simulation to verify DNN model
-│   ├── calculate_R2.py           # Calculate R2 of MOF performance predicted by fine-tuned pre-trained DNN model
-│   ├── calculate_R2_original_DNN.py           # Calculate R2 of MOF performance predicted by the original pre-trained DNN model
+│   │   ├── lammps_input.in          # LAMMPS script for energy minimization of CPFs
+│   │   └── Structures_verify_model.csv         # CPFs for MC simulation to verify DNN model
+│   ├── calculate_R2.py           # Calculate R2 of CPF performance predicted by fine-tuned pre-trained DNN model
+│   ├── calculate_R2_original_DNN.py           # Calculate R2 of CPF performance predicted by the original pre-trained DNN model
 │   ├── counter.json           # JSON file used to record the current loop count
 │   ├── Data_output.py           # Generating the Output.png
 │   ├── Data_summaize.py           # Summarizing the data into final_data.xlsx at the end of each loop
-│   ├── final_data.xlsx           # Summary of structure encodings (255-bit) and performance of all batches of MOFs after program completion
+│   ├── final_data.xlsx           # Summary of structure encodings (255-bit) and performance of all batches of CPFs after program completion
 │   ├── Pretrained_model.ckpt           # Pre-trained DNN model
-│   ├── MOF_verify_model.xlsx           # MOFs used for verifying the DNN model
-│   ├── Output.png           # Summary graph of the program"s final results, including the average performance, highest performance, and total number of MOFs in each batch
-│   ├── TL_data_target_task_test.xlsx           # MOFs used to validate the fine-tuned DNN model
-│   ├── TL_data_target_task_train.xlsx           # MOFs used to fine-tune the pre-trained DNN model
-│   ├── Transferlearning_finetune.py           # Fine-tuning the original pre-trained DNN model with some new MOFs, followed by transfer learning on the remaining MOFs
-│   ├── Transferlearning_originaldnn.py           # Performing transfer learning using the original pre-trained DNN model to predict the performance of the remaining MOFs
-│   ├── TSN_cal.py           # Calculating MOF performance based on MC simulation data, and output adsorption capacity, selectivity as well as TSN value
-│   └── TSN_cal_verify.py           # Calculating MOF performance based on MC simulation data, used to verify the DNN model
+│   ├── Structure_verify_model.xlsx           # CPFs used for verifying the DNN model
+│   ├── Output.png           # Summary graph of the program"s final results, including the average performance, highest performance, and total number of CPFs in each batch
+│   ├── TL_data_target_task_test.xlsx           # CPFs used to validate the fine-tuned DNN model
+│   ├── TL_data_target_task_train.xlsx           # CPFs used to fine-tune the pre-trained DNN model
+│   ├── Transferlearning_finetune.py           # Fine-tuning the original pre-trained DNN model with some new CPFs, followed by transfer learning on the remaining CPFs
+│   ├── Transferlearning_originaldnn.py           # Performing transfer learning using the original pre-trained DNN model to predict the performance of the remaining CPFs
+│   ├── TSN_cal.py           # Calculating CPF performance based on MC simulation data, and output adsorption capacity, selectivity as well as TSN value
+│   └── TSN_cal_verify.py           # Calculating CPF performance based on MC simulation data, used to verify the DNN model
 ├── tobacco_1.0/    # Tobacco files
 ├── 500000.sdf                  # Large substructure database
 ├── Adsorption_simulation.sh                       # GCMC simulation for gas adsorption
 ├── colourMol.py                # Coloring PNG image files
 ├── DefineXAtoms.py             # Defining X atoms
-├── EncodeMOFs.py               # Encoding MOFs
-├── Energy_minimization.sh                       # Geometry optimization for MOF structures
-├── Energy_minimization_verify.sh                       # Optimization for verification MOFs only
+├── Encode_structures.py               # Encoding structures
+├── Energy_minimization.sh                       # Geometry optimization for CPF structures
+├── Energy_minimization_verify.sh                       # Optimization for verification CPFs only
 ├── EQeq_calculation.sh                       # EQeq-based partial charge assignment
-├── error_list_energy_mini.txt           # MOFs that failed during energy minimization
-├── error_list_eqeq.txt         # MOFs that failed during charge calculation (EQeq)
-├── error_list_obtain_data.txt         # MOFs that failed to generate DATA file via lammps-interface
+├── error_list_energy_mini.txt           # CPFs that failed during energy minimization
+├── error_list_eqeq.txt         # CPFs that failed during charge calculation (EQeq)
+├── error_list_obtain_data.txt         # CPFs that failed to generate DATA file via lammps-interface
 ├── Linkers_summary.py          # Summarizing the selected linkers in each cycle
-├── MOF_design_part1.py         # Part 1 of MOF design
-├── MOF_design_part2.py         # Part 2 of MOF design
-├── MOFs_summary.py             # Summarizing synthesized MOFs in each cycle
+├── Structure_design_part1.py         # Part 1 of CPF design
+├── Structure_design_part2.py         # Part 2 of CPF design
+├── Structures_summary.py             # Summarizing synthesized CPFs in each cycle
 ├── mol_with_atom_index.py      # processing MOL files with atom index
-├── MolFormatConversion.py      # Converting MOF file formats
+├── MolFormatConversion.py      # Converting CPF file formats
 ├── MoltoCif.py                 # Converting MOL files to CIF files
 ├── netcode.py                  # Encoding nodes and topology structures
 ├── OptimalFingerprint.py       # Selecting the optimal molecular fingerprint
@@ -112,8 +112,8 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
    - Place linker (**.mol**) files in `/optimal_linker`
    - Place node (**.cif**) files in `/all_nodes` and topologies (**.template**) in `/all_topologies`
    - Copy node/topology files into `/tobacco_1.0/nodes_bb` and `/tobacco_1.0/templates`
-   - Add computed MOF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 1`)  
-     Format: **MOF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → MOF performance**
+   - Add computed CPF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 1`)  
+     Format: **CPF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → CPF performance**
    - Place pre-trained model `Pretrained_model.ckpt` into `/TL`
    - Extract the `SDF.zip` file and place the `500000.sdf` file from the extracted folder in the same directory as `main_auto.sh`.
 
@@ -126,7 +126,7 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 ## Expected Results
 1. Final performance summary: `TL/final_data.xlsx`
 2. Performance graph: `TL/Output.png`
-3. Generated MOFs: `New_MOF_summary/`
+3. Generated CPFs: `New_structure_summary/`
 4. Linker summaries: `Linker_summary/`
 
 ## References
@@ -134,9 +134,9 @@ This project focuses on the automated design of high-performance MOFs (Metal-Org
 
 [LAMMPS-interface for generating LAMMPS files] P. G. Boyd, S. M. Moosavi, M. Witman & B. Smit, Force-Field Prediction of Materials Properties in Metal-Organic Frameworks. J. Phys. Chem. Lett. 8, 357-363 (2017). [https://dx.doi.org/10.1021/acs.jpclett.6b02532]
 
-[RASPA for calculating MOFs' adsorption performance] D. Dubbeldam, S. Calero, D.E. Ellis, and R.Q. Snurr, RASPA: Molecular Simulation Software for Adsorption and Diffusion in Flexible Nanoporous Materials, Mol. Simulat., 42(2), 81-101 (2015). [http://dx.doi.org/10.1080/08927022.2015.1010082]
+[RASPA for calculating CPFs' adsorption performance] D. Dubbeldam, S. Calero, D.E. Ellis, and R.Q. Snurr, RASPA: Molecular Simulation Software for Adsorption and Diffusion in Flexible Nanoporous Materials, Mol. Simulat., 42(2), 81-101 (2015). [http://dx.doi.org/10.1080/08927022.2015.1010082]
 
-[ToBaCCo_1.0 for MOFs synthesis] Y. J. Colón, D. A. Gómez-Gualdrón, R. Q. Snurr, Topologically guided, automated construction of metal–organic frameworks and their evaluation for energy-related applications, Cryst. Growth Des. 17, 5801-5810 (2017). [https://doi.org/10.1021/acs.cgd.7b00848]
+[ToBaCCo_1.0 for CPFs synthesis] Y. J. Colón, D. A. Gómez-Gualdrón, R. Q. Snurr, Topologically guided, automated construction of metal–organic frameworks and their evaluation for energy-related applications, Cryst. Growth Des. 17, 5801-5810 (2017). [https://doi.org/10.1021/acs.cgd.7b00848]
 
 [EQeq for charge equilibration] C. E. Wilmer, K. C. Kim, R. Q. Snurr, An Extended Charge Equilibration Method, J. Phys. Chem. Lett., 3(17), 2506-2511 (2012). [http://doi.org/10.1021/jz3008485]
 
@@ -155,6 +155,7 @@ Special thanks to the project collaborators for their contributions and insights
 ## Citation
 
 If you use this code or dataset in your research, please cite the following publication:
+
 
 
 
