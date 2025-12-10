@@ -7,7 +7,7 @@ import torch.optim as optim
 from ignite.engine import Engine, Events, create_supervised_evaluator
 from ignite.metrics import Loss
 from ignite.contrib.metrics.regression import R2Score
-import torch
+import torch, joblib
 import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
@@ -22,11 +22,10 @@ num_columns_test = len(dataset_test_tt.columns)
 Structure_name = dataset_test_tt.iloc[:, 0].values
 
 # Features: skip name col, exclude the last 4 derived/label cols
-X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
+X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
 
 # NOTE: Ideally reuse the scaler fitted on TRAIN data.
-scaler = StandardScaler()
-scaler.fit(X_tt_test)
+scaler = joblib.load('TL/scaler_pretrained.pkl')
 X_tt_test = scaler.transform(X_tt_test)
 
 data_X_tt = torch.tensor(X_tt_test, dtype = torch.float32).to(device)
@@ -69,8 +68,12 @@ column_count = len(df.columns)
 book = load_workbook(path_excel)
 ws = book['Sheet']
 
-pred_col = column_count + 1
-ws.cell(row = 1, column = pred_col).value = 'TSN_pred'
+headers = list(df.columns)
+if 'TSN_pred' in headers:
+    pred_col = headers.index('TSN_pred') + 1
+else:
+    pred_col = column_count + 1
+    ws.cell(row=1, column=pred_col).value = 'TSN_pred'
 
 # Fast name -> row index mapping
 name_to_row = {str(df.iloc[j, 0]).strip(): j for j in range(row_count)}
