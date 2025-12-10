@@ -118,7 +118,7 @@ for i in range(len(sub_name_topo)):
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(2) + int(number_FP)).value = 'LengthA'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(3) + int(number_FP)).value = 'LengthB'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(4) + int(number_FP)).value = 'LengthC'
-ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_simu'
+ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_pred'
 
 for i in range(len(Structure_name)): # Inputing content
     ws.cell(row = i + 2, column = 1).value = Structure_name[i]
@@ -172,10 +172,10 @@ path_excel = 'new_designed_structures/All_designed_structures.xlsx'
 df = pd.read_excel(path_excel, engine='openpyxl')
 row_count = len(df)
 
-# Find the column number of the TSN_simu column (if it does not exist, write it to the last column by default
+# Find the column number of the TSN_pred column (if it does not exist, write it to the last column by default
 headers = list(df.columns)
-if 'TSN_simu' in headers:
-    tsn_col_index_0 = headers.index('TSN_simu') + 1
+if 'TSN_pred' in headers:
+    tsn_col_index_0 = headers.index('TSN_pred') + 1
 else:
     tsn_col_index_0 = len(headers) + 1
 
@@ -251,7 +251,7 @@ for i in range(len(sub_name_topo)):
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(2) + int(number_FP)).value = 'LengthA'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(3) + int(number_FP)).value = 'LengthB'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(4) + int(number_FP)).value = 'LengthC'
-ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_simu'
+ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_pred'
 
 for i in range(len(Structure_name)): # Inputing content
     ws.cell(row = i + 2, column = 1).value = Structure_name[i]
@@ -266,8 +266,8 @@ wb.save(output_file)
 df_output_file = pd.read_excel(output_file, engine='openpyxl')
 row_count_df_output_file = len(df_output_file)
 headers = list(df_output_file.columns)
-if 'TSN_simu' in headers:
-    tsn_col_index = headers.index('TSN_simu') + 1
+if 'TSN_pred' in headers:
+    tsn_col_index = headers.index('TSN_pred') + 1
 
 book1 = load_workbook(output_file)
 ws = book1.worksheets[0]
@@ -306,7 +306,7 @@ for i in range(len(sub_name_topo)):
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(2) + int(number_FP)).value = 'LengthA'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(3) + int(number_FP)).value = 'LengthB'
 ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(4) + int(number_FP)).value = 'LengthC'
-ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_simu'
+ws.cell(row = 1, column = int(len(sub_name_topo)) + int(len(sub_name_node)) + int(5) + int(number_FP)).value = 'TSN_pred'
 
 for i in range(len(Structure_name)): # Inputing content
     ws.cell(row = i + 2, column = 1).value = Structure_name[i]
