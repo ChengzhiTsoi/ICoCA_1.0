@@ -21,7 +21,7 @@ dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, eng
 num_columns_test = len(dataset_test_tt.columns)
 Structure_name = dataset_test_tt.iloc[:, 0].values
 
-# Features: skip name col, exclude the last 4 derived/label cols
+# Features: skip name col, exclude the last 5 derived/label cols
 X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
 
 # NOTE: Ideally reuse the scaler fitted on TRAIN data.
