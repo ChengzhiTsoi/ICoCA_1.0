@@ -22,8 +22,8 @@ dataset_train_tt = pd.read_excel('TL_data_target_task_train.xlsx', header = 0, e
 dataset_train_tt = dataset_train_tt.dropna()
 
 num_columns_train = len(dataset_train_tt.columns)
-# Features: skip name col (0), exclude last 4 derived/label cols
-X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-4].values
+# Features: skip name col (0), exclude last 5 derived/label cols
+X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-5].values
 # Target by name (safer)
 y_train_tt = dataset_train_tt['TSN_simu'].values
 
@@ -140,8 +140,8 @@ dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, eng
 num_columns_test = len(dataset_test_tt.columns)
 Structure_name = dataset_test_tt.iloc[:, 0].values
 
-# Exclude last 4 derived/label columns just like train
-X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-4].values
+# Exclude last 5 derived/label columns just like train
+X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
 X_tt_test = scaler.transform(X_tt_test)
 
 data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32).to(device)
