@@ -164,7 +164,6 @@ else:
     pred_col = column_count + 1
     ws.cell(row=1, column=pred_col).value = 'TSN_pred'
 
-# Fast name -> row mapping
 name_to_row = {str(df_test.iloc[j, 0]).strip(): j for j in range(row_count)}
 
 for name, pred in zip(Structure_name, y_pred_tt):
