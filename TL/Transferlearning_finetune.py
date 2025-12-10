@@ -7,6 +7,7 @@ from ignite.engine import Engine, Events, create_supervised_evaluator
 from ignite.metrics import Loss
 from ignite.contrib.metrics.regression import R2Score
 import torch
+import joblib
 import torch.nn as nn
 from torch.utils.data import Dataset
 import numpy as np
@@ -27,8 +28,7 @@ X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-4].values
 y_train_tt = dataset_train_tt['TSN_simu'].values
 
 # Scale features (fit on train only)
-scaler = StandardScaler()
-scaler.fit(X_train_tt)
+scaler = joblib.load('TL/scaler_pretrained.pkl')
 X_train_tt = scaler.transform(X_train_tt)
 y_train_tt = y_train_tt.reshape(-1, 1)
 
@@ -157,8 +157,12 @@ column_count = len(df_test.columns)
 book = load_workbook(path_excel)
 ws = book['Sheet']
 
-pred_col = column_count + 1
-ws.cell(row=1, column = pred_col).value = 'TSN_pred'
+headers = list(df_test.columns)
+if 'TSN_pred' in headers:
+    pred_col = headers.index('TSN_pred') + 1
+else:
+    pred_col = column_count + 1
+    ws.cell(row=1, column=pred_col).value = 'TSN_pred'
 
 # Fast name -> row mapping
 name_to_row = {str(df_test.iloc[j, 0]).strip(): j for j in range(row_count)}
