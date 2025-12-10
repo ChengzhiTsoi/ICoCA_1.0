@@ -10,6 +10,7 @@ from openpyxl import Workbook
 from Encode_structures import EM
 import os
 import shutil
+import joblib
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -156,8 +157,7 @@ num_columns = len(data.columns)
 Structure_name = data.iloc[:, 0].values
 X = data.iloc[:, 1:num_columns-1].values
 X = X.astype(np.float64)
-scaler = StandardScaler()
-scaler.fit(X)
+scaler = joblib.load('TL/scaler_pretrained.pkl')
 X = scaler.transform(X)
 
 X_1 = torch.tensor(X, dtype=torch.float32)
