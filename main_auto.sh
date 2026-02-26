@@ -569,7 +569,7 @@ chmod 755 ../../Adsorption_simulation.sh   # grant execute permission
 
 echo "Launching GCMC simulations..."
 
-printf "%s\n" "${valid_mofs[@]}" \
+printf "%s\n" "${valid_structures[@]}" \
   | parallel --line-buffer -j "${MAX_JOBS:-1}" ../../Adsorption_simulation.sh {}
 
 # Final output
