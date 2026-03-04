@@ -746,7 +746,7 @@ while true; do
                 printf "Elapsed time for this round: %.2f seconds\n" "$elapsed_time"
                 break
                 
-            else:
+            else
                 echo "Program error."
                 exit 1 
             fi
@@ -801,7 +801,7 @@ while true; do
                         printf "Elapsed time for this round: %.2f seconds\n" "$elapsed_time"
                         break
                     
-                    else:
+                    else
                         echo "Program error."
                         exit 1
                         
@@ -843,7 +843,7 @@ while true; do
                             printf "Elapsed time for this round: %.2f seconds\n" "$elapsed_time"
                             break
                             
-                        else:
+                        else
                             echo "Program error."
                             exit 1
                         
@@ -866,24 +866,24 @@ while true; do
 
                         modify_train_test_split $new_rate
                         
-                    else:
+                    else
                         echo "Program error."
                         exit 1
                     fi
                     
-                else:
+                else
                     echo "Program error."
                     exit 1
                 fi
                 
             done
             
-        else:
+        else
             echo "Program error."
             exit 1 
         fi
         
-    else:
+    else
         echo "Program error."
         exit 1
     fi
