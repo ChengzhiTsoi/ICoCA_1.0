@@ -650,6 +650,16 @@ sed -i 's/cycle_number=.*/cycle_number=0/' Linkers_summary.py
 rm -rf Linker_summary/*
 rm -rf New_structure_summary/*
 
+if [ -d "modified_nodes" ]; then
+    if ls modified_nodes/*.cif 1> /dev/null 2>&1; then
+        cp modified_nodes/*.cif tobacco_1.0/nodes_bb_database/
+        echo "Modified nodes copied successfully."
+    else
+        echo "No CIF files found in modified_nodes."
+    fi
+else
+    echo "modified_nodes directory not found."
+fi
 
 while true; do
     start_time=$(date +%s.%N)
