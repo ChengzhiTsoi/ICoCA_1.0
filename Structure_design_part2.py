@@ -82,7 +82,7 @@ if os.path.exists(structure_verify_folder) and os.path.isdir(structure_verify_fo
 
 excel_path = 'TL/final_data.xlsx'
 wb = load_workbook(excel_path)
-keep_sheet_name = 'Cycle 1'
+keep_sheet_name = 'Cycle 0'
 sheets = wb.sheetnames
 for sheet in sheets:
     if sheet != keep_sheet_name:
