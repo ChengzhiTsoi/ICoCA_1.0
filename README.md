@@ -113,7 +113,7 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
    - Place linker (**.mol**) files in `/optimal_linker`
    - Copy node/topology files from `/all_nodes` (predefined node set) and `/all_topologies` to `/tobacco_1.0/nodes_bb` and `/tobacco_1.0/templates`
    - Add computed CPF performance data into `TL/final_data.xlsx` (sheet name: `Cycle 0`)  
-     Format: **CPF name → MACCS fingerprint → node one-hot encoding → topology one-hot encoding → crystal size → CPF performance**
+     Format: **CPF name → MACCS fingerprint (167 bits) → node one-hot encoding (44 bits) → topology one-hot encoding (41 bits) → crystal size (3 bits) → CPF performance**
    - Place pre-trained model `Pretrained_model.ckpt` into `/TL`
    - Extract the `SDF.zip` file and place the `500000.sdf` file from the extracted folder in the same directory as `main_auto.sh`.
 
