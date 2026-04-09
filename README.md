@@ -105,7 +105,7 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
 
 ## Usage
 1. Set paths in `required_path.sh`:
-   - `LAMMPS_DIR` → path to LAMMPS (`lmp_mpi` in `src/`)
+   - `LAMMPS_DIR` → path to LAMMPS (`lmp` in `build/`)
    - `RASPA_DIR` → RASPA installation root
    - Number of concurrent tasks
 
