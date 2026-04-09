@@ -99,7 +99,7 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
 1. Python 3.7+
 2. Linux environment (Note: This program has only been tested on `Red Hat Enterprise Linux 9.6 (Plow)`.)
 3. Packages: `RDKit`, `torch`, `scikit-learn`, `openpyxl`, `pytorch-ignite`, `ase` and `openmpi`, `pymatgen`, `paramiko`, `LAMMPS-interface`.
-4. LAMMPS with `MOLECULE` and `EXTRA-MOLECULE` packages enabled. [https://www.lammps.org/#gsc.tab=0]
+4. LAMMPS with `MOLECULE` packages enabled. [https://www.lammps.org/#gsc.tab=0]
 5. RASPA (Ensure that the required molecular definition files (.def) and force field files are located in `/LINUX/gcmc_required`, while the RASPA input files (`simulation.input`) are located in `/LINUX`.) [https://iraspa.org/raspa/]
 6. GNU parallel. [http://ftpmirror.gnu.org/parallel/]
 
