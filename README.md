@@ -103,12 +103,11 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
 5. RASPA (Ensure that the required molecular definition files (.def) and force field files are located in `/LINUX/gcmc_required`, while the RASPA input files (`simulation.input`) are located in `/LINUX`.) [https://iraspa.org/raspa/]
 6. GNU parallel. [http://ftpmirror.gnu.org/parallel/]
 7. To ensure all dependencies (including ToBaCCo 1.0) are properly retrieved, the repository should be cloned with submodules:
-   `git clone --recurse-submodules https://github.com/ChengzhiTsoi/ICoCA_1.0.git`
+   -`git clone --recurse-submodules https://github.com/ChengzhiTsoi/ICoCA_1.0.git`
    If the repository has already been cloned, run:
-   `git submodule update --init --recursive`
-   
-   ⚠️ Note:
-   The ToBaCCo 1.0 module is included as a submodule and will not be downloaded by default unless the commands above are used.
+   -`git submodule update --init --recursive`
+   -⚠️ Note:
+   -The ToBaCCo 1.0 module is included as a submodule and will not be downloaded by default unless the commands above are used.
 
 ## Usage
 1. Set paths in `required_path.sh`:
