@@ -59,7 +59,7 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
 │   ├── calculate_R2_original_DNN.py           # Calculate R2 of CPF performance predicted by the original pre-trained DNN model
 │   ├── counter.json           # JSON file used to record the current loop count
 │   ├── Data_output.py           # Generating the Output.png
-│   ├── Data_summaize.py           # Summarizing the data into final_data.xlsx at the end of each loop
+│   ├── Data_summarize.py           # Summarizing the data into final_data.xlsx at the end of each loop
 │   ├── final_data.xlsx           # Summary of structure encodings (255-bit) and performance of all batches of CPFs after program completion
 │   ├── Pretrained_model.ckpt           # Pre-trained DNN model
 │   ├── scaler_pretrained.pkl           # Pre-fitted feature scaler (StandardScaler) obtained from the training dataset; used to normalize new input features before inference
