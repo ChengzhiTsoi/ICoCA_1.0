@@ -99,15 +99,3 @@ for o in os.listdir(path_new_structure):
         pass
     else:
         shutil.copy(path_new_structure + '/' + o, path_new_structure_1 + '/' + o)
-        
-
-# 7. Delete the extra data from final_data.xlsx
-excel_file_path = 'TL/final_data.xlsx'
-wb = openpyxl.load_workbook(excel_file_path)
-sheet_names = wb.sheetnames
-
-for sheet_name in sheet_names:
-    if sheet_name != 'Cycle 1':
-        del wb[sheet_name]
-
-wb.save(excel_file_path)

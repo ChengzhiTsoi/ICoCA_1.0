@@ -23,7 +23,7 @@ dataset_train_tt = dataset_train_tt.dropna()
 
 num_columns_train = len(dataset_train_tt.columns)
 # Features: skip name col (0), exclude last 5 derived/label cols
-X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train - 5].values
+X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-5].values
 # Target by name (safer)
 y_train_tt = dataset_train_tt['TSN_simu'].values
 
@@ -33,7 +33,7 @@ X_train_tt = scaler.transform(X_train_tt)
 y_train_tt = y_train_tt.reshape(-1, 1)
 
 X_train_tt_1, X_val_tt, y_train_tt_1, y_val_tt = train_test_split(
-    X_train_tt, y_train_tt, test_size = 0.1, random_state = 42
+    X_train_tt, y_train_tt, test_size=0.1, random_state=42
 )
 
 train_set_tt = pd.concat([pd.DataFrame(X_train_tt_1), pd.DataFrame(y_train_tt_1)], axis = 1)
@@ -144,7 +144,7 @@ Structure_name = dataset_test_tt.iloc[:, 0].values
 X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
 X_tt_test = scaler.transform(X_tt_test)
 
-data_X_tt = torch.tensor(X_tt_test, dtype = torch.float32).to(device)
+data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32).to(device)
 with torch.no_grad():
     y_pred_tt = trained_model(data_X_tt).cpu().numpy().squeeze() # 1D array
 
@@ -164,6 +164,7 @@ else:
     pred_col = column_count + 1
     ws.cell(row=1, column=pred_col).value = 'TSN_pred'
 
+# Fast name -> row mapping
 name_to_row = {str(df_test.iloc[j, 0]).strip(): j for j in range(row_count)}
 
 for name, pred in zip(Structure_name, y_pred_tt):
@@ -181,5 +182,5 @@ top_indices = order[:choose_number]
 selected_names = [str(Structure_name[idx]) for idx in top_indices]
 # drop ".cif" suffix if present
 selected_names = [n[:-4] if n.lower().endswith('.cif') else n for n in selected_names]
-pd.DataFrame(selected_names, columns = ['Name']).to_csv('Structure_verify_model.csv', index = False, encoding = 'utf-8')
+pd.DataFrame(selected_names, columns = ['Name']).to_csv('Structures_verify_model.csv', index = False, encoding = 'utf-8')
 print('The script Transferlearning_finetune.py has completed.')

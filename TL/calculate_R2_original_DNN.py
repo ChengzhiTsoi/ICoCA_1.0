@@ -16,7 +16,7 @@ r2 = r2_score(y_simu, y_pred)
 print("R2:", r2)
 
 # Judging whether the model is accuracy
-threshold = float(0.6)
+threshold = float(0.9)
 if float(r2) >= threshold:
     sys.exit(0)
 else:

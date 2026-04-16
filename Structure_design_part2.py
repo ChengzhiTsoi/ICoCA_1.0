@@ -70,7 +70,7 @@ for t in os.listdir(output_folder1):
         os.remove(file_path)
     elif 'TL_data_target_task_test.xlsx' in t:
         os.remove(file_path)
-    elif 'Structure_verify_model.csv' in t:
+    elif 'Structures_verify_model.csv' in t:
         os.remove(file_path)
     elif 'Output.png' in t:
         os.remove(file_path)

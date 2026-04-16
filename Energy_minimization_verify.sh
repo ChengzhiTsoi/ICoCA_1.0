@@ -21,7 +21,7 @@ fi
 
 # Run LAMMPS
 sed -i 's/INDEX/'"$FrameworkName"'/' lammps_input.in
-if ! ${LAMMPS_PATH}/src/lmp_mpi -in lammps_input.in; then
+if ! ${LAMMPS_PATH}/build/lmp -in lammps_input.in; then
     echo "$FrameworkName" >> ../../../error_list_energy_mini.txt
     exit 0
 fi
@@ -30,7 +30,7 @@ fi
 python3 DatatoCif.py
 
 cd ../..
-cp "LINUX/MOF_verify/$FrameworkName/optimized_mof.cif" "LINUX/$FrameworkName.cif"
+cp "LINUX/Structure_verify/$FrameworkName/optimized_structure.cif" "LINUX/$FrameworkName.cif"
 
 # Update progress
 (

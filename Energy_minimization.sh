@@ -21,7 +21,7 @@ fi
 
 # Step 3: Run LAMMPS
 sed -i 's/INDEX/'"${FrameworkName}"'/' lammps_input.in
-if ! ${LAMMPS_PATH}/src/lmp_mpi -in lammps_input.in; then
+if ! ${LAMMPS_PATH}/build/lmp -in lammps_input.in; then
     echo "$FrameworkName" >> ../error_list_energy_mini.txt
     exit 0
 fi

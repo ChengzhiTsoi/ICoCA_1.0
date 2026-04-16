@@ -1,12 +1,12 @@
 # Iterative Construction of Crystal Adsorbent (ICoCA)
-*Automated Circular Design of High-Performance Crystalline Porous Frameworks*
+*Iterative Evolutionary Design of High-Performance Crystalline Porous Frameworks via Material Fingerprints and Transfer Learning*
 
 <p align="center">
   <img src="ICoCA_Process.png" width="800" alt="ICoCA Process">
 </p>
 
 
-This repository contains the transfer learning model and the automated design submission script codes for hypothetical CPFs, along with the corresponding datasets described in our paper.
+This repository contains the transfer learning model and the iterative evolutionary design submission script codes for hypothetical CPFs, along with the corresponding datasets described in our paper.
 
 ## Table of Contents
 - [Project Description](#project-description)
