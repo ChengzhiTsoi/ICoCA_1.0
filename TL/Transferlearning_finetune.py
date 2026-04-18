@@ -28,7 +28,7 @@ X_train_tt = dataset_train_tt.iloc[:, 1:num_columns_train-5].values
 y_train_tt = dataset_train_tt['TSN_simu'].values
 
 # Scale features (fit on train only)
-scaler = joblib.load('TL/scaler_pretrained.pkl')
+scaler = joblib.load('scaler_pretrained.pkl')
 X_train_tt = scaler.transform(X_train_tt)
 y_train_tt = y_train_tt.reshape(-1, 1)
 
