@@ -25,7 +25,7 @@ Structure_name = dataset_test_tt.iloc[:, 0].values
 X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
 
 # NOTE: Ideally reuse the scaler fitted on TRAIN data.
-scaler = joblib.load('TL/scaler_pretrained.pkl')
+scaler = joblib.load('scaler_pretrained.pkl')
 X_tt_test = scaler.transform(X_tt_test)
 
 data_X_tt = torch.tensor(X_tt_test, dtype = torch.float32).to(device)
