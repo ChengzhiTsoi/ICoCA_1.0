@@ -312,6 +312,7 @@ part3(){
 topdir=$PWD
 cd TL
 python3 Transferlearning_finetune.py
+echo "The script Transferlearning_finetune.py has completed."
 csv_file_2="Structures_verify_model.csv"
 
 # Getting the TSN top 20% Structures. Env: ADTL/TL
@@ -674,6 +675,7 @@ while true; do
         
         cd TL
         python3 Transferlearning_originaldnn.py
+        echo "The script Transferlearning_originaldnn.py has completed."
         cd ..
           
     elif [ $status_0 -eq 1 ]; then
