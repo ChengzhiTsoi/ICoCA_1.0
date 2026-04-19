@@ -140,8 +140,8 @@ dataset_test_tt = pd.read_excel('TL_data_target_task_test.xlsx', header = 0, eng
 num_columns_test = len(dataset_test_tt.columns)
 Structure_name = dataset_test_tt.iloc[:, 0].values
 
-# Exclude last 5 derived/label columns just like train
-X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-5].values
+# Exclude last 1 derived/label columns just like train
+X_tt_test = dataset_test_tt.iloc[:, 1:num_columns_test-1].values
 X_tt_test = scaler.transform(X_tt_test)
 
 data_X_tt = torch.tensor(X_tt_test, dtype=torch.float32).to(device)
