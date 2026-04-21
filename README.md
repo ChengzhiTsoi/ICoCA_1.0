@@ -106,7 +106,7 @@ This project focuses on the automated design of high-performance CPFs (Crystalli
    `git clone --recurse-submodules https://github.com/ChengzhiTsoi/ICoCA_1.0.git`  
    If the repository has already been cloned, run:  
    `git submodule update --init --recursive`  
-   ⚠️ Note:  
+   Note:  
    The ToBaCCo 1.0 module is included as a submodule and will not be downloaded by default unless the commands above are used.  
 
 ## Usage
