@@ -131,7 +131,9 @@ if TSN_last_max <= TSN_now_max:
         molf_name = name_now[i]
         if "best_mol_" not in molf_name:
             continue
-        linker_core = molf_name.split("best_mol_")[1].split(" ")[0]
+        linker_part = molf_name.split("best_mol_")[1].split(" ")[0]
+        linker_part = os.path.splitext(linker_part)[0]
+        linker_core = linker_part.split("_")[0]
         src = os.path.join(best_edges_dir, f"{linker_core}.mol")
         dst = os.path.join(optimal_linker_dir, f"{linker_core}.mol")
         if os.path.exists(src):
