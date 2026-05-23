@@ -78,16 +78,6 @@ for t in os.listdir(output_folder1):
 structure_verify_folder = os.path.join(output_folder1, 'Structure_verify')
 if os.path.exists(structure_verify_folder) and os.path.isdir(structure_verify_folder):
     shutil.rmtree(structure_verify_folder)
-                        
-
-excel_path = 'TL/final_data.xlsx'
-wb = load_workbook(excel_path)
-keep_sheet_name = 'Cycle 0'
-sheets = wb.sheetnames
-for sheet in sheets:
-    if sheet != keep_sheet_name:
-        wb.remove(wb[sheet])
-wb.save(excel_path)
 
 
 path_test_data = 'gcmc_rest_structures'
@@ -98,7 +88,7 @@ for q0 in os.listdir(path_test_data):
 # 7. Encoding new Structures and prepare the TL data
 path_new_structure_1 = 'new_designed_structures'
 path_mol = 'best_edges_mol'
-train_test=0.1
+train_test=.4
 
 X_test, sub_name_node, sub_name_topo, linker_fp2, Structure_name, bbb = EM(path_new_structure_1, path_mol)
 
