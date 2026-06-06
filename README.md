@@ -1,5 +1,5 @@
 # Iterative Construction of Crystal Adsorbent (ICoCA)
-*Iterative Evolutionary Design of High-Performance Crystalline Porous Frameworks via Material Fingerprints and Transfer Learning*
+*ICoCA and CrIAs: Towards end-to-end AI automation of molecular simulation and microscopic mechanisms for crystalline porous frameworks*
 
 <p align="center">
   <img src="ICoCA_Process.png" width="800" alt="ICoCA Process">
