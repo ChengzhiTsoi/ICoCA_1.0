@@ -153,8 +153,6 @@ This work is supported by:
 - Guangzhou University
 - University of Notre Dame
 - Center for Research Computing at the University of Notre Dame
-- Guangzhou Key Laboratory New Energy and Green Catalysis
-- Joint Institute of Guangzhou University & Institute of Corrosion Science and Technology
 
 Special thanks to the project collaborators for their contributions and insights.
 
