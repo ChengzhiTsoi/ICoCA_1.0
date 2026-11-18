@@ -90,8 +90,7 @@ val_loader_tt = torch.utils.data.DataLoader(val_set_1_tt, batch_size = len(val_s
 for p in trained_model.input_layer.parameters(): p.requires_grad = False
 for p in trained_model.hidden_layer1.parameters(): p.requires_grad = True
 for p in trained_model.hidden_layer2.parameters(): p.requires_grad = False
-for p in trained_model.output_layer.parameters(): p.requires_grad = False
-
+for p in trained_model.output_layer.parameters(): p.requires_grad = True
 criterion = nn.MSELoss()
 metrics_tt = {"loss": Loss(criterion), "r_2": R2Score()}
 optimizer_tt = optim.Adam(filter(lambda p: p.requires_grad, trained_model.parameters()), lr = 1e-4)
